@@ -556,7 +556,7 @@ $('#lb').onclick = () => $('#lb').classList.remove('on');
 (function music() {
   const M = window.MUSIC || {}, btn = $('#music');
   if (!M.src) return;
-  const au = new Audio(); au.loop = true; au.preload = 'auto';
+  const au = new Audio(); au.loop = true; au.preload = 'none';
   au.addEventListener('canplay', () => btn.classList.add('ok'), {once: true});
   au.src = M.src;
   $('#musicT').textContent = [M.title, M.artist].filter(Boolean).join(' · ') || '背景音乐';
