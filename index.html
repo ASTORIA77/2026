@@ -424,19 +424,21 @@ function magnet(i, r = 3) {
 
 /* ---------- 拖动 + 惯性 ---------- */
 (function drag() {
-  let on = false, last = 0, lastT = 0, moved = 0, vel = 0;
+  let on = false, last = 0, lastT = 0, moved = 0, vel = 0, cool = 0;
+  const SENS = .55;
   const ang = e => { const b = dial.getBoundingClientRect(); return Math.atan2(e.clientY - b.top - b.height / 2, e.clientX - b.left - b.width / 2) * 180 / Math.PI; };
-  const DEAD = .6;
-  dial.addEventListener('pointerdown', e => { const b = dial.getBoundingClientRect(), dx = e.clientX - b.left - b.width / 2, dy = e.clientY - b.top - b.height / 2, r = Math.hypot(dx, dy) / (b.width / 2); if (r < DEAD) return; e.preventDefault(); stop(); on = true; moved = 0; vel = 0; last = ang(e); lastT = e.timeStamp; dial.setPointerCapture(e.pointerId); });
+  const DEAD = .72;
+  dial.addEventListener('pointerdown', e => { if (cool) return; const b = dial.getBoundingClientRect(), dx = e.clientX - b.left - b.width / 2, dy = e.clientY - b.top - b.height / 2, r = Math.hypot(dx, dy) / (b.width / 2); if (r < DEAD) return; e.preventDefault(); stop(); on = true; moved = 0; vel = 0; last = ang(e); lastT = e.timeStamp; dial.setPointerCapture(e.pointerId); });
   dial.addEventListener('pointermove', e => {
     if (!on) return; e.preventDefault();
     const a = ang(e); let d = a - last; if (d > 180) d -= 360; if (d < -180) d += 360;
+    d *= SENS;
     const dt = Math.max(1, e.timeStamp - lastT);
     vel = .7 * (d / dt) + .3 * vel; last = a; lastT = e.timeStamp; moved += Math.abs(d);
     setRot(rot + d, 'drag');
   });
   const end = e => {
-    if (!on) return; on = false;
+    if (!on) return; on = false; cool = 1; setTimeout(() => { cool = 0; }, 100);
     if (moved < 3) { // 轻点：直接跳到点到的那一天
       const b = dial.getBoundingClientRect(), dx = e.clientX - b.left - b.width / 2, dy = e.clientY - b.top - b.height / 2;
       const deg = Math.atan2(dy, dx) * 180 / Math.PI + 90;
