@@ -77,7 +77,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .legend i{display:inline-block;width:8px;height:8px;border-radius:50%;vertical-align:1px;margin-right:6px}
 
 /* ---------- 日期长条 ---------- */
-.strip-wrap{position:relative;margin-top:18px;background:var(--white);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+.strip-wrap{position:relative;margin:18px 0 28px;background:var(--white);border:1px solid var(--line);border-radius:18px;overflow:hidden}
 .strip-wrap::before,.strip-wrap::after{content:"";position:absolute;top:0;bottom:0;width:36px;z-index:2;pointer-events:none}
 .strip-wrap::before{left:0;background:linear-gradient(90deg,#fff,rgba(255,255,255,0))}
 .strip-wrap::after{right:0;background:linear-gradient(-90deg,#fff,rgba(255,255,255,0))}
@@ -94,8 +94,8 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .cell.on .n{background:var(--blue-soft);color:#fff;box-shadow:0 6px 12px -8px rgba(43,107,255,.45)}
 
 /* ---------- 纪事导航 ---------- */
-.evnav{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:14px}
-.evnav button{height:48px;padding:0 20px;border-radius:99px;background:var(--white);border:1px solid var(--line);font-size:17px;font-weight:700;color:var(--blue);white-space:nowrap;transition:.2s}
+.evnav{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:20px}
+.evnav button{height:40px;padding:0 16px;border-radius:99px;background:var(--white);border:1px solid var(--line);font-size:15px;font-weight:700;color:var(--blue);white-space:nowrap;transition:.2s}
 .evnav button:not(:disabled):active{background:var(--blue);color:#fff;border-color:var(--blue)}
 .evnav button:disabled{color:var(--ink3);opacity:.5;cursor:default}
 .evnav span{font-size:15px;color:var(--ink3);text-align:center}
@@ -208,6 +208,7 @@ footer p{font-size:19px;color:var(--ink2);margin-top:12px;letter-spacing:.16em}
   .col-l{padding:20px 0 0}
   .col-r{margin-top:20px;min-height:0;contain:size;display:flex;flex-direction:column;overflow-y:auto;scrollbar-width:thin}
   .col-r > *{flex-shrink:0}
+  .strip-wrap{margin-top:0}
   .sv-head .big{font-size:76px}
   .story h3{font-size:28px}
   .ix{grid-template-columns:1fr 1fr 1fr}
@@ -232,6 +233,8 @@ footer p{font-size:19px;color:var(--ink2);margin-top:12px;letter-spacing:.16em}
 
 <div class="wrap main">
   <section class="col-l">
+    <div class="strip-wrap"><div class="strip" id="strip"></div></div>
+
     <div class="dial-box" id="dialBox">
       <svg id="dial" viewBox="0 0 400 400" aria-label="年轮：拖动外圈逐日浏览"></svg>
       <div class="dial-c" id="dialC">
@@ -240,9 +243,6 @@ footer p{font-size:19px;color:var(--ink2);margin-top:12px;letter-spacing:.16em}
         <div class="c-w" id="cW"></div>
       </div>
     </div>
-    
-
-    <div class="strip-wrap"><div class="strip" id="strip"></div></div>
 
     <div class="evnav">
       <button id="pv">‹ 上一则</button>
