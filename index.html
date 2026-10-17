@@ -653,6 +653,7 @@ new IntersectionObserver(([en]) => {
 
 /* ================= 自适应年轮尺寸 ================= */
 (function autoSize() {
+  const isWechat = /MicroMessenger/i.test(navigator.userAgent);
   function calc() {
     if (innerWidth >= 1000) { dialBox.style.maxWidth = ''; return; }
     const hero = $('.hero');
@@ -660,7 +661,8 @@ new IntersectionObserver(([en]) => {
     const evnav = $('.evnav');
     const used = hero.offsetHeight + strip.offsetHeight + evnav.offsetHeight + 110;
     const avail = innerHeight - used;
-    const w = Math.max(200, Math.min(innerWidth * .88, 360, avail));
+    const maxW = isWechat ? .75 : .88;
+    const w = Math.max(200, Math.min(innerWidth * maxW, 360, avail));
     dialBox.style.maxWidth = w + 'px';
   }
   calc();
