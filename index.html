@@ -309,7 +309,7 @@ const isGold = i => (byIdx[i] || []).some(e => e.tag === GOLD);
 /* ---------- 状态 ---------- */
 let rot = 0, sel = -1, storyShown = -1, raf = 0, storyT = 0, lockUntil = 0;
 const now = new Date();
-const startIdx = now.getFullYear() === Y ? idxOf(`${Y}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`) : (evDays[0] ?? 0);
+const startIdx = 0;
 
 /* ================= 年轮 ================= */
 const NS = 'http://www.w3.org/2000/svg';
@@ -348,9 +348,9 @@ const arcPath = (r1, r2, a1, a2) => {
     const t = el('text', {'text-anchor': 'middle', 'dominant-baseline': 'central', 'font-family': 'NSans, sans-serif', 'font-size': 18}, dial);
     t.textContent = CN[m]; labels.push(t);
   }
-  // 固定指针
-  el('path', {d: `M${C - 7} 2 h14 l-7 10 z`, fill: '#2B6BFF'}, dial);
-  el('line', {x1: C, y1: 12, x2: C, y2: 50, stroke: '#2B6BFF', 'stroke-width': 2, 'stroke-linecap': 'round'}, dial);
+  // 固定指针（下方）
+  el('path', {d: `M${C - 7} 398 h14 l-7 -10 z`, fill: '#2B6BFF'}, dial);
+  el('line', {x1: C, y1: 388, x2: C, y2: 350, stroke: '#2B6BFF', 'stroke-width': 2, 'stroke-linecap': 'round'}, dial);
 })();
 
 let hlM = -1;
@@ -367,11 +367,11 @@ function placeLabels() {
 function setRot(r, src) {
   rot = r;
   ring.setAttribute('transform', `rotate(${rot.toFixed(3)} ${C} ${C})`);
-  const i = mod(Math.round(-rot / STEP), N);
+  const i = mod(Math.round((180 - rot) / STEP), N);
   if (i !== sel) { const prev = sel; sel = i; onSel(src, prev); }
   placeLabels();
 }
-const nearRot = i => { let t = -i * STEP; while (t - rot > 180) t -= 360; while (t - rot < -180) t += 360; return t; };
+const nearRot = i => { let t = 180 - i * STEP; while (t - rot > 180) t -= 360; while (t - rot < -180) t += 360; return t; };
 let finT = 0;
 const stop = () => { cancelAnimationFrame(raf); clearTimeout(finT); };
 function animateTo(i, dur) {
@@ -389,7 +389,7 @@ function animateTo(i, dur) {
 }
 function fwdTo(i) {
   stop();
-  let to = -i * STEP;
+  let to = 180 - i * STEP;
   let diff = rot - to;
   diff = ((diff % 360) + 360) % 360;
   to = rot - diff;
@@ -406,7 +406,7 @@ function fwdTo(i) {
 }
 function bwdTo(i) {
   stop();
-  let to = -i * STEP;
+  let to = 180 - i * STEP;
   let diff = to - rot;
   diff = ((diff % 360) + 360) % 360;
   to = rot + diff;
@@ -441,7 +441,7 @@ function magnet(i, r = 3) {
     d *= SENS;
     const dt = Math.max(1, e.timeStamp - lastT);
     vel = .7 * (d / dt) + .3 * vel; last = a; lastT = e.timeStamp; moved += Math.abs(d);
-    setRot(rot + d, 'drag');
+    setRot(rot - d, 'drag');
   });
   const end = e => {
     if (!on) return; on = false; cool = 1; setTimeout(() => { cool = 0; }, 100);
@@ -459,7 +459,7 @@ function magnet(i, r = 3) {
     const step = t => {
       const dt = t - t0; t0 = t;
       v *= Math.pow(.955, dt / 16);
-      setRot(rot + v * dt, 'drag');
+      setRot(rot - v * dt, 'drag');
       if (Math.abs(v) > .015) raf = requestAnimationFrame(step); else animateTo(magnet(sel), 380);
     };
     raf = requestAnimationFrame(step);
@@ -487,7 +487,7 @@ strip.addEventListener('scroll', () => {
   clearTimeout(userT); userT = setTimeout(() => { userStrip = false; }, 400);
   stop();
   const f = strip.scrollLeft / CW;
-  let t = -f * STEP; while (t - rot > 180) t -= 360; while (t - rot < -180) t += 360;
+  let t = 180 - f * STEP; while (t - rot > 180) t -= 360; while (t - rot < -180) t += 360;
   setRot(t, 'strip');
   clearTimeout(stripT); stripT = setTimeout(flushStory, 160);
 }, {passive: true});
@@ -671,7 +671,7 @@ new IntersectionObserver(([en]) => {
 })();
 
 /* ================= 启动：年轮转入 ================= */
-setRot(-startIdx * STEP + (reduce ? 0 : 75), 'init');
+setRot(180 - startIdx * STEP + (reduce ? 0 : 75), 'init');
 requestAnimationFrame(() => animateTo(startIdx, reduce ? 0 : 1400));
 })();
 </script>
