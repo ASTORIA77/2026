@@ -552,47 +552,6 @@ $('#story').addEventListener('click', e => {
 });
 $('#lb').onclick = () => $('#lb').classList.remove('on');
 
-/* ================= 自动轮播 ================= */
-(function autoplay() {
-  if (!evDays.length) return;
-  let active = false, autoIdx = 0, autoTimer = 0, idleTimer = 0;
-  const DISPLAY = 5000, BUFFER = 1200, IDLE = 10000;
-
-  function stopAuto() { active = false; clearTimeout(autoTimer); clearTimeout(idleTimer); }
-
-  function advance() {
-    if (!active) return;
-    autoIdx = (autoIdx + 1) % evDays.length;
-    fwdTo(evDays[autoIdx]);
-    autoTimer = setTimeout(advance, DISPLAY + BUFFER);
-  }
-
-  function start() {
-    stopAuto();
-    active = true;
-    let si = evDays.findIndex(x => x >= sel);
-    if (si < 0) si = 0;
-    autoIdx = si;
-    fwdTo(evDays[autoIdx]);
-    autoTimer = setTimeout(advance, DISPLAY + BUFFER);
-  }
-
-  function onUser() {
-    if (active) stopAuto();
-  }
-  function onRelease() {
-    clearTimeout(idleTimer);
-    idleTimer = setTimeout(start, IDLE);
-  }
-
-  ['pointerdown', 'touchstart', 'keydown'].forEach(t =>
-    addEventListener(t, onUser, {capture: true, passive: true}));
-  ['pointerup', 'touchend', 'touchcancel'].forEach(t =>
-    addEventListener(t, onRelease, {capture: true, passive: true}));
-
-  setTimeout(start, 2000);
-})();
-
 /* ================= 背景音乐 ================= */
 (function music() {
   const M = window.MUSIC || {}, btn = $('#music');
