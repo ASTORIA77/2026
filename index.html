@@ -50,22 +50,22 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes eq{0%,100%{height:3px}50%{height:12px}}
 
-.hero-main{--yr:clamp(58px,17vw,104px);display:flex;align-items:stretch;justify-content:space-between;margin-top:22px}
+.hero-main{--yr:clamp(58px,17vw,104px);display:flex;align-items:stretch;justify-content:space-between;margin-top:14px}
 .yr{font-family:var(--num);font-weight:700;font-size:var(--yr);line-height:.72;letter-spacing:-.03em;color:var(--ink)}
 .yr em{font-style:normal;color:var(--blue)}
 .hero-t{text-align:right;display:flex;flex-direction:column;justify-content:space-between}
 .hero-t b{display:block;font-size:calc(var(--yr) * .335);letter-spacing:.12em;margin-right:-.12em;line-height:1;white-space:nowrap}
 .hero-t span{font-size:13px;color:var(--ink3);letter-spacing:.1em}
-.lede{margin-top:12px;margin-bottom:36px;font-size:18px;color:var(--ink2)}
+.lede{margin-top:10px;margin-bottom:16px;font-size:18px;color:var(--ink2)}
 .lede b{color:var(--blue);font-weight:700}
 
 /* ================= 主体 ================= */
 .main{display:flex;flex-direction:column}
-.col-l{padding-top:18px}
+.col-l{padding-top:8px}
 
 /* ---------- 年轮：手机上铺满可用宽度，两侧留白 ---------- */
-.dial-box{position:relative;width:90%;max-width:360px;aspect-ratio:1;margin:0 auto;container-type:inline-size}
-#dial{width:100%;height:100%;display:block;touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab;overflow:visible}
+.dial-box{position:relative;width:90%;max-width:min(85vw,48dvh);aspect-ratio:1;margin:0 auto;container-type:inline-size}
+#dial{width:100%;height:100%;display:block;user-select:none;-webkit-user-select:none;cursor:grab;overflow:visible}
 #dial:active{cursor:grabbing}
 .dial-c{position:absolute;left:50%;top:50%;width:56%;height:56%;padding-top:3%;transform:translate(-50%,-50%);border-radius:50%;
   display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;cursor:pointer;touch-action:pan-y}
@@ -426,9 +426,10 @@ function magnet(i, r = 3) {
 (function drag() {
   let on = false, last = 0, lastT = 0, moved = 0, vel = 0;
   const ang = e => { const b = dial.getBoundingClientRect(); return Math.atan2(e.clientY - b.top - b.height / 2, e.clientX - b.left - b.width / 2) * 180 / Math.PI; };
-  dial.addEventListener('pointerdown', e => { stop(); on = true; moved = 0; vel = 0; last = ang(e); lastT = e.timeStamp; dial.setPointerCapture(e.pointerId); });
+  const DEAD = .6;
+  dial.addEventListener('pointerdown', e => { const b = dial.getBoundingClientRect(), dx = e.clientX - b.left - b.width / 2, dy = e.clientY - b.top - b.height / 2, r = Math.hypot(dx, dy) / (b.width / 2); if (r < DEAD) return; e.preventDefault(); stop(); on = true; moved = 0; vel = 0; last = ang(e); lastT = e.timeStamp; dial.setPointerCapture(e.pointerId); });
   dial.addEventListener('pointermove', e => {
-    if (!on) return;
+    if (!on) return; e.preventDefault();
     const a = ang(e); let d = a - last; if (d > 180) d -= 360; if (d < -180) d += 360;
     const dt = Math.max(1, e.timeStamp - lastT);
     vel = .7 * (d / dt) + .3 * vel; last = a; lastT = e.timeStamp; moved += Math.abs(d);
@@ -641,6 +642,25 @@ $('#lb').onclick = () => $('#lb').classList.remove('on');
 new IntersectionObserver(([en]) => {
   $('#mini').classList.toggle('on', !en.isIntersecting && en.boundingClientRect.top < 0);
 }).observe($('.strip-wrap'));
+
+/* ================= 自适应年轮尺寸 ================= */
+(function autoSize() {
+  function calc() {
+    if (innerWidth >= 1000) { dialBox.style.maxWidth = ''; return; }
+    const hero = $('.hero');
+    const strip = $('.strip-wrap');
+    const evnav = $('.evnav');
+    const used = hero.offsetHeight + strip.offsetHeight + evnav.offsetHeight + 110;
+    const avail = innerHeight - used;
+    const w = Math.max(200, Math.min(innerWidth * .88, 360, avail));
+    dialBox.style.maxWidth = w + 'px';
+  }
+  calc();
+  addEventListener('resize', calc);
+  setTimeout(calc, 100);
+  setTimeout(calc, 500);
+  setTimeout(calc, 1500);
+})();
 
 /* ================= 启动：年轮转入 ================= */
 setRot(-startIdx * STEP + (reduce ? 0 : 75), 'init');

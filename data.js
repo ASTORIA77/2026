@@ -18,7 +18,7 @@
 
 /* 背景音乐：把歌放进 music 文件夹，填上文件名即可；不需要音乐就把 src 留空 '' */
 window.MUSIC = {
-  src: 'music/完整歌曲.mp3',
+  src: 'music/完整歌曲.m4a',
   title: '',
   artist: ''
 };
