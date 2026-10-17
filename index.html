@@ -390,7 +390,10 @@ function animateTo(i, dur) {
 function fwdTo(i) {
   stop();
   let to = -i * STEP;
-  while (to > rot) to -= 360;
+  let diff = rot - to;
+  diff = ((diff % 360) + 360) % 360;
+  to = rot - diff;
+  if (diff === 0) to -= 360;
   const from = rot, t0 = performance.now();
   const dur = reduce ? 0 : Math.min(900, 280 + Math.abs(to - from) * 3);
   const step = t => {
@@ -404,7 +407,10 @@ function fwdTo(i) {
 function bwdTo(i) {
   stop();
   let to = -i * STEP;
-  while (to < rot) to += 360;
+  let diff = to - rot;
+  diff = ((diff % 360) + 360) % 360;
+  to = rot + diff;
+  if (diff === 0) to += 360;
   const from = rot, t0 = performance.now();
   const dur = reduce ? 0 : Math.min(900, 280 + Math.abs(to - from) * 3);
   const step = t => {
