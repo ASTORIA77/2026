@@ -434,7 +434,7 @@ function magnet(i, r = 3) {
   const SENS = .55;
   const ang = e => { const b = dial.getBoundingClientRect(); return Math.atan2(e.clientY - b.top - b.height / 2, e.clientX - b.left - b.width / 2) * 180 / Math.PI; };
   const DEAD = .72;
-  dial.addEventListener('pointerdown', e => { if (cool) return; const b = dial.getBoundingClientRect(), dx = e.clientX - b.left - b.width / 2, dy = e.clientY - b.top - b.height / 2, r = Math.hypot(dx, dy) / (b.width / 2); if (r < DEAD) return; e.preventDefault(); stop(); on = true; moved = 0; vel = 0; last = ang(e); lastT = e.timeStamp; dial.setPointerCapture(e.pointerId); });
+  dial.addEventListener('pointerdown', e => { if (cool) return; const b = dial.getBoundingClientRect(), dx = e.clientX - b.left - b.width / 2, dy = e.clientY - b.top - b.height / 2, r = Math.hypot(dx, dy) / (b.width / 2); if (r < DEAD || r > 1.05) return; e.preventDefault(); stop(); on = true; moved = 0; vel = 0; last = ang(e); lastT = e.timeStamp; dial.setPointerCapture(e.pointerId); });
   dial.addEventListener('pointermove', e => {
     if (!on) return; e.preventDefault();
     const a = ang(e); let d = a - last; if (d > 180) d -= 360; if (d < -180) d += 360;
