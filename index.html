@@ -116,6 +116,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .story p{font-size:17px;color:#2A3650;line-height:1.7;margin-top:.5em;text-align:justify}
 .ph{display:grid;gap:4px;margin:12px 0 4px;border-radius:16px;overflow:hidden}
 .ph.n2,.ph.n4{grid-template-columns:1fr 1fr}
+.ph.n5{grid-template-columns:repeat(6,1fr)}
+.ph.n5 figure:nth-child(-n+3){grid-column:span 2}
+.ph.n5 figure:nth-child(n+4){grid-column:span 3}
 .ph.n3{grid-template-columns:2fr 1fr;grid-template-rows:1fr 1fr}
 .ph.n3 figure:first-child{grid-row:span 2}
 .ph figure{overflow:hidden;background:var(--blue-ll);cursor:zoom-in}
@@ -312,7 +315,7 @@ const NS = 'http://www.w3.org/2000/svg';
 const dial = $('#dial'), dialBox = $('#dialBox');
 const el = (t, a, p) => { const n = document.createElementNS(NS, t); for (const k in a) n.setAttribute(k, a[k]); p && p.appendChild(n); return n; };
 const P = (r, deg) => { const a = (deg - 90) * Math.PI / 180; return [C + r * Math.cos(a), C + r * Math.sin(a)]; };
-let ring, labels = [], hl;
+let ring, labels = [], hl, evTicks = [];
 const arcPath = (r1, r2, a1, a2) => {
   const [x1, y1] = P(r2, a1), [x2, y2] = P(r2, a2), [x3, y3] = P(r1, a2), [x4, y4] = P(r1, a1);
   return `M${x1} ${y1}A${r2} ${r2} 0 0 1 ${x2} ${y2}L${x3} ${y3}A${r1} ${r1} 0 0 0 ${x4} ${y4}Z`;
@@ -332,13 +335,15 @@ const arcPath = (r1, r2, a1, a2) => {
     const [x1, y1] = P(106, mStart[m] * STEP), [x2, y2] = P(150, mStart[m] * STEP);
     el('line', {x1, y1, x2, y2, stroke: '#D5DFF0', 'stroke-width': 1}, ring);
   }
+  evTicks = [];
   for (let i = 0; i < N; i++) {
     const d = dateOf(i).getDate(), has = !!byIdx[i], g = isGold(i), deg = i * STEP;
     const r1 = has ? 156 : d === 1 ? 166 : d % 5 === 0 ? 172 : 176;
     const [x1, y1] = P(r1, deg), [x2, y2] = P(184, deg);
-    el('line', {x1, y1, x2, y2, 'stroke-linecap': 'round',
-      stroke: has ? '#2B6BFF' : d === 1 ? '#8E9AB2' : '#C3CEE2',
+    const line = el('line', {x1, y1, x2, y2, 'stroke-linecap': 'round',
+      stroke: has ? '#6B95F2' : d === 1 ? '#8E9AB2' : '#C3CEE2',
       'stroke-width': has ? 3 : d === 1 ? 1.4 : .9}, ring);
+    if (has) evTicks[i] = line;
   }
   for (let m = 0; m < 12; m++) {
     const t = el('text', {'text-anchor': 'middle', 'dominant-baseline': 'central', 'font-family': 'NSans, sans-serif', 'font-size': 18}, dial);
@@ -364,7 +369,11 @@ function setRot(r, src) {
   rot = r;
   ring.setAttribute('transform', `rotate(${rot.toFixed(3)} ${C} ${C})`);
   const i = mod(Math.round((180 - rot) / STEP), N);
-  if (i !== sel) { const prev = sel; sel = i; onSel(src, prev); }
+  if (i !== sel) {
+    if (evTicks[sel]) evTicks[sel].setAttribute('stroke', '#6B95F2');
+    if (evTicks[i]) evTicks[i].setAttribute('stroke', '#2B6BFF');
+    const prev = sel; sel = i; onSel(src, prev);
+  }
   placeLabels();
 }
 const nearRot = i => { let t = 180 - i * STEP; while (t - rot > 180) t -= 360; while (t - rot < -180) t += 360; return t; };
@@ -528,7 +537,7 @@ function renderStory() {
     <div class="meta"><b>${m + 1}月${d.getDate()}日 · 星期${WD[d.getDay()]}</b>2026 年第 ${sel + 1} 天${FEST[k] ? ' · ' + FEST[k] : ''}</div></div>`;
   if (list.length) {
     h += list.map((e, n) => {
-      const imgs = (e.images || []).slice(0, 4);
+      const imgs = (e.images || []).slice(0, 5);
       const ps = String(e.text || '').split(/\n+/).filter(Boolean).map(p => `<p>${esc(p)}</p>`).join('');
       if (e.vertical && imgs.length) {
         return `<article class="story story-v" style="animation-delay:${n * .07}s">
@@ -561,7 +570,7 @@ function renderStory() {
       '沉淀，是为了更好的绽放'
     ];
     const d = dateOf(sel), m = d.getMonth();
-    const imgMap = { 9: 'images/unrecorded_day/10月金秋.webp' };
+    const imgMap = { 8: 'images/unrecorded_day/09月月满团圆.webp', 9: 'images/unrecorded_day/10月金秋.webp' };
     const img = imgMap[m];
     const msgIdx = sel % MSGS.length;
     h += `<div class="void">${img ? `<img src="${img}" alt="" loading="lazy">` : ''}<div class="q">${MSGS[msgIdx]}</div></div>`;
@@ -578,7 +587,7 @@ $('#lb').onclick = () => $('#lb').classList.remove('on');
 (function music() {
   const M = window.MUSIC || {}, btn = $('#music');
   if (!M.src) return;
-  const au = new Audio(); au.loop = true; au.preload = 'none';
+  const au = new Audio(); au.loop = true; au.preload = 'auto';
   au.addEventListener('canplay', () => btn.classList.add('ok'), {once: true});
   au.src = M.src;
   $('#musicT').textContent = [M.title, M.artist].filter(Boolean).join(' · ') || '背景音乐';
