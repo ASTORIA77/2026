@@ -129,13 +129,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .story-v-text{flex:1;min-width:0}
 .story-v-text h3{margin-top:0}
 .ph.n3 figure:first-child img{aspect-ratio:auto}
-.void{padding:22px 0 16px}
-.void .q{font-size:16px;color:var(--ink3);text-align:left;letter-spacing:.06em}
-.void .near{display:flex;flex-direction:column;gap:10px;margin-top:22px}
-.void .near button{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:16px;background:var(--blue-ll);text-align:left;font-size:18px}
-.void .near .d{font-family:var(--num);font-weight:700;font-size:19px;color:var(--blue);min-width:52px}
-.void .near .t{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.void .near .a{font-size:13px;color:var(--ink3)}
+.void{padding:32px 0 24px;text-align:center}
+.void img{width:160px;height:160px;object-fit:contain;border-radius:16px;margin:0 auto 20px;display:block}
+.void .q{font-size:18px;color:var(--ink2);line-height:1.6;letter-spacing:.04em}
 
 /* ---------- 一览 ---------- */
 .sec-h{display:flex;align-items:baseline;justify-content:space-between;padding:52px 0 6px}
@@ -546,12 +542,29 @@ function renderStory() {
         ${imgs.length ? `<div class="${phClass}">${imgs.map(s => `<figure><img src="${esc(s)}" alt="" loading="lazy"></figure>`).join('')}</div>` : ''}${ps}</article>`;
     }).join('');
   } else {
-    const pv = evDays.filter(x => x < sel).pop(), nx = evDays.find(x => x > sel);
-    const near = [[pv, '往前'], [nx, '往后']].filter(([x]) => x !== undefined).map(([x, a]) => {
-      const dd = dateOf(x);
-      return `<button data-go="${x}"><span class="d">${dd.getMonth() + 1}.${pad(dd.getDate())}</span><span class="t">${esc(byIdx[x][0].title)}</span><span class="a">${a}</span></button>`;
-    }).join('');
-    h += `<div class="void"><div class="q">附近的纪事</div>${near ? `<div class="near">${near}</div>` : ''}</div>`;
+    const MSGS = [
+      '没有记录的日子，我们在努力',
+      '平凡的日常，也是珍贵的时光',
+      '留白处，自有风景',
+      '静静沉淀，蓄势待发',
+      '每一份沉默，都在酝酿精彩',
+      '生活的美好，藏在细节里',
+      '慢慢来，好戏在后头',
+      '平凡亦有不平凡的光',
+      '日子平淡，内心丰盈',
+      '每一步，都算数',
+      '安静生长，不负时光',
+      '未完待续的精彩',
+      '蓄势待发，未来可期',
+      '平淡日子里的小确幸',
+      '时光不语，静待花开',
+      '沉淀，是为了更好的绽放'
+    ];
+    const d = dateOf(sel), m = d.getMonth();
+    const imgMap = { 9: 'images/unrecorded_day/10月金秋.webp' };
+    const img = imgMap[m];
+    const msgIdx = sel % MSGS.length;
+    h += `<div class="void">${img ? `<img src="${img}" alt="" style="width:160px;height:160px;object-fit:contain;border-radius:16px;margin:0 auto 20px;display:block">` : ''}<div class="q">${MSGS[msgIdx]}</div></div>`;
   }
   $('#story').innerHTML = h;
 }
