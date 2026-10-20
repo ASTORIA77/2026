@@ -119,6 +119,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .ph.n5{grid-template-columns:repeat(6,1fr)}
 .ph.n5 figure:nth-child(-n+3){grid-column:span 2}
 .ph.n5 figure:nth-child(n+4){grid-column:span 3}
+.ph.n6{grid-template-columns:repeat(3,1fr)}
 .ph.n3{grid-template-columns:2fr 1fr;grid-template-rows:1fr 1fr}
 .ph.n3 figure:first-child{grid-row:span 2}
 .ph figure{overflow:hidden;background:var(--blue-ll);cursor:zoom-in}
@@ -341,7 +342,7 @@ const arcPath = (r1, r2, a1, a2) => {
     const r1 = has ? 156 : d === 1 ? 166 : d % 5 === 0 ? 172 : 176;
     const [x1, y1] = P(r1, deg), [x2, y2] = P(184, deg);
     const line = el('line', {x1, y1, x2, y2, 'stroke-linecap': 'round',
-      stroke: has ? '#6B95F2' : d === 1 ? '#8E9AB2' : '#C3CEE2',
+      stroke: has ? '#C8DAFF' : d === 1 ? '#8E9AB2' : '#C3CEE2',
       'stroke-width': has ? 3 : d === 1 ? 1.4 : .9}, ring);
     if (has) evTicks[i] = line;
   }
@@ -370,8 +371,8 @@ function setRot(r, src) {
   ring.setAttribute('transform', `rotate(${rot.toFixed(3)} ${C} ${C})`);
   const i = mod(Math.round((180 - rot) / STEP), N);
   if (i !== sel) {
-    if (evTicks[sel]) evTicks[sel].setAttribute('stroke', '#6B95F2');
-    if (evTicks[i]) evTicks[i].setAttribute('stroke', '#2B6BFF');
+    if (evTicks[sel]) { evTicks[sel].setAttribute('stroke', '#C8DAFF'); evTicks[sel].setAttribute('stroke-width', '3'); }
+    if (evTicks[i]) { evTicks[i].setAttribute('stroke', '#2B6BFF'); evTicks[i].setAttribute('stroke-width', '4'); }
     const prev = sel; sel = i; onSel(src, prev);
   }
   placeLabels();
@@ -537,7 +538,7 @@ function renderStory() {
     <div class="meta"><b>${m + 1}月${d.getDate()}日 · 星期${WD[d.getDay()]}</b>2026 年第 ${sel + 1} 天${FEST[k] ? ' · ' + FEST[k] : ''}</div></div>`;
   if (list.length) {
     h += list.map((e, n) => {
-      const imgs = (e.images || []).slice(0, 5);
+      const imgs = (e.images || []).slice(0, 6);
       const ps = String(e.text || '').split(/\n+/).filter(Boolean).map(p => `<p>${esc(p)}</p>`).join('');
       if (e.vertical && imgs.length) {
         return `<article class="story story-v" style="animation-delay:${n * .07}s">
@@ -570,7 +571,7 @@ function renderStory() {
       '沉淀，是为了更好的绽放'
     ];
     const d = dateOf(sel), m = d.getMonth();
-    const imgMap = { 8: 'images/unrecorded_day/09月月满团圆.webp', 9: 'images/unrecorded_day/10月金秋.webp' };
+    const imgMap = { 7: 'images/unrecorded_day/08月探索新材.webp', 8: 'images/unrecorded_day/09月月满团圆.webp', 9: 'images/unrecorded_day/10月金秋.webp' };
     const img = imgMap[m];
     const msgIdx = sel % MSGS.length;
     h += `<div class="void">${img ? `<img src="${img}" alt="" loading="lazy">` : ''}<div class="q">${MSGS[msgIdx]}</div></div>`;
