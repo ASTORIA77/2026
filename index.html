@@ -238,7 +238,8 @@ footer p{font-size:19px;color:var(--ink2);margin-top:12px;letter-spacing:.16em}
 .splash-line span.out{opacity:0;transform:translateY(-12px)}
 .splash-line span.typing::after{content:'▍';margin-left:3px;animation:blink 1s steps(1) infinite}
 @keyframes blink{50%{opacity:0}}
-#enterBtn{height:52px;padding:0 46px;border:0;border-radius:99px;background:var(--blue-soft);color:#fff;font-size:19px;font-weight:700;letter-spacing:.14em;box-shadow:0 10px 22px -14px rgba(43,107,255,.5);cursor:pointer}
+#enterBtn{height:52px;padding:0 46px;border:0;border-radius:99px;background:var(--blue-soft);color:#fff;font-size:19px;font-weight:700;letter-spacing:.14em;box-shadow:0 10px 22px -14px rgba(43,107,255,.5);cursor:pointer;opacity:0;pointer-events:none;transition:opacity .9s}
+#enterBtn.ready{opacity:1;pointer-events:auto}
 #enterBtn:active{transform:scale(.96)}
 body.splash-on{overflow:hidden}
 
@@ -764,6 +765,7 @@ new IntersectionObserver(([en]) => {
   function reveal() {
     img.classList.add('ready');
     title.classList.add('ready');
+    btn.classList.add('ready');
     start();
   }
   // 标题与图片就绪后同步浮现；2.5s 兜底，避免弱网卡住开屏
