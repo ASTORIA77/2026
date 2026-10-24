@@ -489,10 +489,10 @@ function fwdTo(i) {
   const step = t => {
     const p = dur ? Math.min(1, (t - t0) / dur) : 1, e = 1 - Math.pow(1 - p, 3);
     setRot(from + (to - from) * e, 'anim');
-    if (p < 1) raf = requestAnimationFrame(step); else { clearTimeout(finT); flushStory(); mobileScroll(); }
+    if (p < 1) raf = requestAnimationFrame(step); else { clearTimeout(finT); flushStory(); }
   };
   raf = requestAnimationFrame(step);
-  finT = setTimeout(() => { cancelAnimationFrame(raf); setRot(to, 'anim'); flushStory(); mobileScroll(); }, dur + 120);
+  finT = setTimeout(() => { cancelAnimationFrame(raf); setRot(to, 'anim'); flushStory(); }, dur + 120);
 }
 function bwdTo(i) {
   stop();
@@ -506,10 +506,10 @@ function bwdTo(i) {
   const step = t => {
     const p = dur ? Math.min(1, (t - t0) / dur) : 1, e = 1 - Math.pow(1 - p, 3);
     setRot(from + (to - from) * e, 'anim');
-    if (p < 1) raf = requestAnimationFrame(step); else { clearTimeout(finT); flushStory(); mobileScroll(); }
+    if (p < 1) raf = requestAnimationFrame(step); else { clearTimeout(finT); flushStory(); }
   };
   raf = requestAnimationFrame(step);
-  finT = setTimeout(() => { cancelAnimationFrame(raf); setRot(to, 'anim'); flushStory(); mobileScroll(); }, dur + 120);
+  finT = setTimeout(() => { cancelAnimationFrame(raf); setRot(to, 'anim'); flushStory(); }, dur + 120);
 }
 // 磁吸：松手时若附近 3 天内有纪事，自动吸附过去
 function magnet(i, r = 3) {
@@ -560,7 +560,9 @@ $('#dialC').addEventListener('click', () => { if (byIdx[sel]) mobileScroll(); })
 function mobileScroll() {
   if (window.innerWidth <= 768) {
     const el = $('#story'), rect = el.getBoundingClientRect();
-    window.scrollTo({top: window.scrollY + rect.top - 60, behavior: 'smooth'});
+    if (rect.top > 120 || rect.bottom < 0) {
+      window.scrollTo({top: window.scrollY + rect.top - 60, behavior: 'smooth'});
+    }
   } else {
     const colR = document.querySelector('.col-r');
     if (colR) colR.scrollTop = 0;
