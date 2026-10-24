@@ -471,11 +471,11 @@ function animateTo(i, dur) {
   const step = t => {
     const p = dur ? Math.min(1, (t - t0) / dur) : 1, e = 1 - Math.pow(1 - p, 3);
     setRot(from + (to - from) * e, 'anim');
-    if (p < 1) raf = requestAnimationFrame(step); else { clearTimeout(finT); flushStory(); }
+    if (p < 1) raf = requestAnimationFrame(step); else { clearTimeout(finT); flushStory(); mobileScroll(); }
   };
   raf = requestAnimationFrame(step);
   // 兜底：页面在后台或掉帧时，保证动画一定落到终点
-  finT = setTimeout(() => { cancelAnimationFrame(raf); setRot(to, 'anim'); flushStory(); }, dur + 120);
+  finT = setTimeout(() => { cancelAnimationFrame(raf); setRot(to, 'anim'); flushStory(); mobileScroll(); }, dur + 120);
 }
 function fwdTo(i) {
   stop();
@@ -489,10 +489,10 @@ function fwdTo(i) {
   const step = t => {
     const p = dur ? Math.min(1, (t - t0) / dur) : 1, e = 1 - Math.pow(1 - p, 3);
     setRot(from + (to - from) * e, 'anim');
-    if (p < 1) raf = requestAnimationFrame(step); else { clearTimeout(finT); flushStory(); }
+    if (p < 1) raf = requestAnimationFrame(step); else { clearTimeout(finT); flushStory(); mobileScroll(); }
   };
   raf = requestAnimationFrame(step);
-  finT = setTimeout(() => { cancelAnimationFrame(raf); setRot(to, 'anim'); flushStory(); }, dur + 120);
+  finT = setTimeout(() => { cancelAnimationFrame(raf); setRot(to, 'anim'); flushStory(); mobileScroll(); }, dur + 120);
 }
 function bwdTo(i) {
   stop();
@@ -506,10 +506,10 @@ function bwdTo(i) {
   const step = t => {
     const p = dur ? Math.min(1, (t - t0) / dur) : 1, e = 1 - Math.pow(1 - p, 3);
     setRot(from + (to - from) * e, 'anim');
-    if (p < 1) raf = requestAnimationFrame(step); else { clearTimeout(finT); flushStory(); }
+    if (p < 1) raf = requestAnimationFrame(step); else { clearTimeout(finT); flushStory(); mobileScroll(); }
   };
   raf = requestAnimationFrame(step);
-  finT = setTimeout(() => { cancelAnimationFrame(raf); setRot(to, 'anim'); flushStory(); }, dur + 120);
+  finT = setTimeout(() => { cancelAnimationFrame(raf); setRot(to, 'anim'); flushStory(); mobileScroll(); }, dur + 120);
 }
 // 磁吸：松手时若附近 3 天内有纪事，自动吸附过去
 function magnet(i, r = 3) {
@@ -555,7 +555,17 @@ function magnet(i, r = 3) {
     raf = requestAnimationFrame(step);
   }
 })();
-$('#dialC').addEventListener('click', () => { if (byIdx[sel]) $('#story').scrollIntoView({behavior: 'smooth', block: 'start'}); });
+$('#dialC').addEventListener('click', () => { if (byIdx[sel]) mobileScroll(); });
+
+function mobileScroll() {
+  if (window.innerWidth <= 768) {
+    const el = $('#story'), rect = el.getBoundingClientRect();
+    window.scrollTo({top: window.scrollY + rect.top - 60, behavior: 'smooth'});
+  } else {
+    const colR = document.querySelector('.col-r');
+    if (colR) colR.scrollTop = 0;
+  }
+}
 
 /* ================= 日期长条 ================= */
 const strip = $('#strip');
@@ -579,7 +589,7 @@ strip.addEventListener('scroll', () => {
   const f = strip.scrollLeft / CW;
   let t = 180 - f * STEP; while (t - rot > 180) t -= 360; while (t - rot < -180) t += 360;
   setRot(t, 'strip');
-  clearTimeout(stripT); stripT = setTimeout(flushStory, 160);
+  clearTimeout(stripT); stripT = setTimeout(() => { flushStory(); mobileScroll(); }, 160);
 }, {passive: true});
 strip.addEventListener('click', e => { const c = e.target.closest('.cell'); if (c) animateTo(+c.dataset.i); });
 
