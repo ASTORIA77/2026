@@ -464,18 +464,18 @@ function setRot(r, src) {
 const nearRot = i => { let t = 180 - i * STEP; while (t - rot > 180) t -= 360; while (t - rot < -180) t += 360; return t; };
 let finT = 0;
 const stop = () => { cancelAnimationFrame(raf); clearTimeout(finT); };
-function animateTo(i, dur) {
+function animateTo(i, dur, skipScroll) {
   stop();
   const to = nearRot(i), from = rot, t0 = performance.now();
   dur = reduce ? 0 : (dur ?? Math.min(900, 280 + Math.abs(to - from) * 3));
   const step = t => {
     const p = dur ? Math.min(1, (t - t0) / dur) : 1, e = 1 - Math.pow(1 - p, 3);
     setRot(from + (to - from) * e, 'anim');
-    if (p < 1) raf = requestAnimationFrame(step); else { clearTimeout(finT); flushStory(); mobileScroll(); }
+    if (p < 1) raf = requestAnimationFrame(step); else { clearTimeout(finT); flushStory(); if (!skipScroll) mobileScroll(); }
   };
   raf = requestAnimationFrame(step);
   // 兜底：页面在后台或掉帧时，保证动画一定落到终点
-  finT = setTimeout(() => { cancelAnimationFrame(raf); setRot(to, 'anim'); flushStory(); mobileScroll(); }, dur + 120);
+  finT = setTimeout(() => { cancelAnimationFrame(raf); setRot(to, 'anim'); flushStory(); if (!skipScroll) mobileScroll(); }, dur + 120);
 }
 function fwdTo(i) {
   stop();
@@ -843,7 +843,7 @@ new IntersectionObserver(([en]) => {
 
 /* ================= 启动：年轮转入 ================= */
 setRot(180 - startIdx * STEP + (reduce ? 0 : 75), 'init');
-requestAnimationFrame(() => animateTo(startIdx, reduce ? 0 : 1400));
+requestAnimationFrame(() => animateTo(startIdx, reduce ? 0 : 1400, true));
 })();
 </script>
 </body>
