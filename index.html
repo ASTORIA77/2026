@@ -560,9 +560,7 @@ $('#dialC').addEventListener('click', () => { if (byIdx[sel]) mobileScroll(); })
 function mobileScroll() {
   if (window.innerWidth <= 768) {
     const el = $('#story'), rect = el.getBoundingClientRect();
-    if (rect.top > 120 || rect.bottom < 0) {
-      window.scrollTo({top: window.scrollY + rect.top - 60, behavior: 'smooth'});
-    }
+    window.scrollTo({top: window.scrollY + rect.top - 80, behavior: 'smooth'});
   } else {
     const colR = document.querySelector('.col-r');
     if (colR) colR.scrollTop = 0;
@@ -622,8 +620,10 @@ function onSel(src, prev) {
 function flushStory() { clearTimeout(storyT); if (storyShown !== sel) renderStory(); }
 const goPrev = () => { const p = evDays.filter(x => x < sel).pop(); if (p !== undefined) bwdTo(p); };
 const goNext = () => { const n = evDays.find(x => x > sel); if (n !== undefined) fwdTo(n); };
-$('#pv').onclick = $('#mpv').onclick = goPrev;
-$('#nx').onclick = $('#mnx').onclick = goNext;
+$('#pv').onclick = goPrev;
+$('#nx').onclick = goNext;
+$('#mpv').onclick = () => { goPrev(); mobileScroll(); };
+$('#mnx').onclick = () => { goNext(); mobileScroll(); };
 $('#mtop').onclick = () => dialBox.scrollIntoView({behavior: 'smooth', block: 'center'});
 
 /* ================= 当日正文 ================= */
