@@ -123,6 +123,11 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .ph.n6{grid-template-columns:repeat(3,1fr)}
 .ph.n3{grid-template-columns:repeat(3,1fr)}
 .ph.n3 img{aspect-ratio:4/3}
+.ph.square{background:transparent}
+.ph.square figure{background:transparent;overflow:visible}
+.ph.square img{aspect-ratio:1/1;object-fit:contain;object-position:center}
+.ph.image-top img{object-position:center 15%}
+.ph.image-bottom img{object-position:center 35%}
 .ph figure{overflow:hidden;background:var(--blue-ll);cursor:zoom-in}
 .ph img{width:100%;height:100%;object-fit:cover;display:block;aspect-ratio:21/9;object-position:center 25%}
 .ph.n1 img{aspect-ratio:21/9}
@@ -625,7 +630,7 @@ function renderStory() {
           <div class="story-v-text">${e.tag ? `<div class="tag${e.tag === GOLD ? ' gold' : ''}">${esc(e.tag)}</div>` : ''}<h3>${esc(e.title || '')}</h3>${ps}</div>
         </article>`;
       }
-      const phClass = `ph n${imgs.length}`;
+      const phClass = `ph n${imgs.length}${e.square ? ' square' : ''}${e.imageTop ? ' image-top' : ''}${e.imageBottom ? ' image-bottom' : ''}`;
       return `<article class="story" style="animation-delay:${n * .07}s">
         ${e.tag ? `<div class="tag${e.tag === GOLD ? ' gold' : ''}">${esc(e.tag)}</div>` : ''}<h3>${esc(e.title || '')}</h3>
         ${imgs.length ? `<div class="${phClass}">${imgs.map(s => `<figure><img src="${esc(s)}" alt="" loading="lazy"></figure>`).join('')}</div>` : ''}${ps}</article>`;
@@ -650,7 +655,7 @@ function renderStory() {
       '沉淀，是为了更好的绽放'
     ];
     const d = dateOf(sel), m = d.getMonth();
-    const imgMap = { 7: 'images/unrecorded_day/08月探索新材.webp', 8: 'images/unrecorded_day/09月月满团圆.webp', 9: 'images/unrecorded_day/10月金秋.webp' };
+    const imgMap = { 6: 'images/unrecorded_day/07月厂区炎炎夏日.webp', 7: 'images/unrecorded_day/08月探索新材.webp', 8: 'images/unrecorded_day/09月月满团圆.webp', 9: 'images/unrecorded_day/10月金秋.webp' };
     const img = imgMap[m];
     const msgIdx = sel % MSGS.length;
     h += `<div class="void">${img ? `<img src="${img}" alt="" loading="lazy">` : ''}<div class="q">${MSGS[msgIdx]}</div></div>`;
