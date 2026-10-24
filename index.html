@@ -471,11 +471,10 @@ function animateTo(i, dur, skipScroll) {
   const step = t => {
     const p = dur ? Math.min(1, (t - t0) / dur) : 1, e = 1 - Math.pow(1 - p, 3);
     setRot(from + (to - from) * e, 'anim');
-    if (p < 1) raf = requestAnimationFrame(step); else { clearTimeout(finT); flushStory(); }
+    if (p < 1) raf = requestAnimationFrame(step); else { clearTimeout(finT); flushStory(); desktopScrollTop(); }
   };
   raf = requestAnimationFrame(step);
-  // 兜底：页面在后台或掉帧时，保证动画一定落到终点
-  finT = setTimeout(() => { cancelAnimationFrame(raf); setRot(to, 'anim'); flushStory(); }, dur + 120);
+  finT = setTimeout(() => { cancelAnimationFrame(raf); setRot(to, 'anim'); flushStory(); desktopScrollTop(); }, dur + 120);
 }
 function fwdTo(i) {
   stop();
@@ -489,10 +488,10 @@ function fwdTo(i) {
   const step = t => {
     const p = dur ? Math.min(1, (t - t0) / dur) : 1, e = 1 - Math.pow(1 - p, 3);
     setRot(from + (to - from) * e, 'anim');
-    if (p < 1) raf = requestAnimationFrame(step); else { clearTimeout(finT); flushStory(); }
+    if (p < 1) raf = requestAnimationFrame(step); else { clearTimeout(finT); flushStory(); desktopScrollTop(); }
   };
   raf = requestAnimationFrame(step);
-  finT = setTimeout(() => { cancelAnimationFrame(raf); setRot(to, 'anim'); flushStory(); }, dur + 120);
+  finT = setTimeout(() => { cancelAnimationFrame(raf); setRot(to, 'anim'); flushStory(); desktopScrollTop(); }, dur + 120);
 }
 function bwdTo(i) {
   stop();
@@ -506,10 +505,10 @@ function bwdTo(i) {
   const step = t => {
     const p = dur ? Math.min(1, (t - t0) / dur) : 1, e = 1 - Math.pow(1 - p, 3);
     setRot(from + (to - from) * e, 'anim');
-    if (p < 1) raf = requestAnimationFrame(step); else { clearTimeout(finT); flushStory(); }
+    if (p < 1) raf = requestAnimationFrame(step); else { clearTimeout(finT); flushStory(); desktopScrollTop(); }
   };
   raf = requestAnimationFrame(step);
-  finT = setTimeout(() => { cancelAnimationFrame(raf); setRot(to, 'anim'); flushStory(); }, dur + 120);
+  finT = setTimeout(() => { cancelAnimationFrame(raf); setRot(to, 'anim'); flushStory(); desktopScrollTop(); }, dur + 120);
 }
 // 磁吸：松手时若附近 3 天内有纪事，自动吸附过去
 function magnet(i, r = 3) {
@@ -555,15 +554,19 @@ function magnet(i, r = 3) {
     raf = requestAnimationFrame(step);
   }
 })();
-$('#dialC').addEventListener('click', () => { if (byIdx[sel]) mobileScroll(); });
+$('#dialC').addEventListener('click', () => { if (byIdx[sel]) { mobileScroll(); desktopScrollTop(); } });
+
+function desktopScrollTop() {
+  if (window.innerWidth > 768) {
+    const colR = document.querySelector('.col-r');
+    if (colR) colR.scrollTop = 0;
+  }
+}
 
 function mobileScroll() {
   if (window.innerWidth <= 768) {
     const el = $('#story'), rect = el.getBoundingClientRect();
     window.scrollTo({top: window.scrollY + rect.top - 80, behavior: 'smooth'});
-  } else {
-    const colR = document.querySelector('.col-r');
-    if (colR) colR.scrollTop = 0;
   }
 }
 
@@ -589,9 +592,9 @@ strip.addEventListener('scroll', () => {
   const f = strip.scrollLeft / CW;
   let t = 180 - f * STEP; while (t - rot > 180) t -= 360; while (t - rot < -180) t += 360;
   setRot(t, 'strip');
-  clearTimeout(stripT); stripT = setTimeout(() => { flushStory(); mobileScroll(); }, 160);
+  clearTimeout(stripT); stripT = setTimeout(() => { flushStory(); mobileScroll(); desktopScrollTop(); }, 160);
 }, {passive: true});
-strip.addEventListener('click', e => { const c = e.target.closest('.cell'); if (c) { animateTo(+c.dataset.i); mobileScroll(); } });
+strip.addEventListener('click', e => { const c = e.target.closest('.cell'); if (c) { animateTo(+c.dataset.i); mobileScroll(); desktopScrollTop(); } });
 
 /* ================= 选中变化 ================= */
 let lastCell = null;
@@ -622,8 +625,8 @@ const goPrev = () => { const p = evDays.filter(x => x < sel).pop(); if (p !== un
 const goNext = () => { const n = evDays.find(x => x > sel); if (n !== undefined) fwdTo(n); };
 $('#pv').onclick = goPrev;
 $('#nx').onclick = goNext;
-$('#mpv').onclick = () => { goPrev(); mobileScroll(); };
-$('#mnx').onclick = () => { goNext(); mobileScroll(); };
+$('#mpv').onclick = () => { goPrev(); mobileScroll(); desktopScrollTop(); };
+$('#mnx').onclick = () => { goNext(); mobileScroll(); desktopScrollTop(); };
 $('#mtop').onclick = () => dialBox.scrollIntoView({behavior: 'smooth', block: 'center'});
 
 /* ================= 当日正文 ================= */
