@@ -471,11 +471,11 @@ function animateTo(i, dur, skipScroll) {
   const step = t => {
     const p = dur ? Math.min(1, (t - t0) / dur) : 1, e = 1 - Math.pow(1 - p, 3);
     setRot(from + (to - from) * e, 'anim');
-    if (p < 1) raf = requestAnimationFrame(step); else { clearTimeout(finT); flushStory(); if (!skipScroll) mobileScroll(); }
+    if (p < 1) raf = requestAnimationFrame(step); else { clearTimeout(finT); flushStory(); }
   };
   raf = requestAnimationFrame(step);
   // 兜底：页面在后台或掉帧时，保证动画一定落到终点
-  finT = setTimeout(() => { cancelAnimationFrame(raf); setRot(to, 'anim'); flushStory(); if (!skipScroll) mobileScroll(); }, dur + 120);
+  finT = setTimeout(() => { cancelAnimationFrame(raf); setRot(to, 'anim'); flushStory(); }, dur + 120);
 }
 function fwdTo(i) {
   stop();
@@ -591,7 +591,7 @@ strip.addEventListener('scroll', () => {
   setRot(t, 'strip');
   clearTimeout(stripT); stripT = setTimeout(() => { flushStory(); mobileScroll(); }, 160);
 }, {passive: true});
-strip.addEventListener('click', e => { const c = e.target.closest('.cell'); if (c) animateTo(+c.dataset.i); });
+strip.addEventListener('click', e => { const c = e.target.closest('.cell'); if (c) { animateTo(+c.dataset.i); mobileScroll(); } });
 
 /* ================= 选中变化 ================= */
 let lastCell = null;
