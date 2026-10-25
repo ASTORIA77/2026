@@ -670,7 +670,7 @@ function renderStory() {
       '沉淀，是为了更好的绽放'
     ];
     const d = dateOf(sel), m = d.getMonth();
-    const imgMap = { 6: 'images/unrecorded_day/07月厂区炎炎夏日.webp', 7: 'images/unrecorded_day/08月探索新材.webp', 8: 'images/unrecorded_day/09月月满团圆.webp', 9: 'images/unrecorded_day/10月金秋.webp' };
+    const imgMap = { 5: 'images/unrecorded_day/06月绿色共生厂区版.webp', 6: 'images/unrecorded_day/07月厂区炎炎夏日.webp', 7: 'images/unrecorded_day/08月探索新材.webp', 8: 'images/unrecorded_day/09月月满团圆.webp', 9: 'images/unrecorded_day/10月金秋.webp' };
     const img = imgMap[m];
     const msgIdx = sel % MSGS.length;
     h += `<div class="void">${img ? `<img src="${img}" alt="" loading="lazy">` : ''}<div class="q">${MSGS[msgIdx]}</div></div>`;
