@@ -51,11 +51,11 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes eq{0%,100%{height:3px}50%{height:12px}}
 
-.hero-main{--yr:clamp(58px,17vw,104px);display:flex;align-items:stretch;justify-content:space-between;margin-top:20px}
+.hero-main{--yr:clamp(58px,17vw,104px);display:flex;align-items:flex-end;justify-content:space-between;margin-top:20px}
 .yr{font-family:var(--num);font-weight:700;font-size:var(--yr);line-height:.72;letter-spacing:-.03em;color:var(--ink)}
 .yr em{font-style:normal;color:var(--blue)}
-.hero-t{text-align:right;display:flex;flex-direction:column;justify-content:space-between}
-.hero-t b{display:block;font-size:calc(var(--yr) * .335);letter-spacing:.12em;margin-right:-.12em;line-height:1;white-space:nowrap}
+.hero-t{text-align:right;display:flex;flex-direction:column;justify-content:space-between;transform:translateY(3px)}
+.hero-t b{display:block;font-size:calc(var(--yr) * .30);letter-spacing:.12em;margin-right:-.12em;line-height:1.6;white-space:nowrap}
 .hero-t span{font-size:13px;color:var(--ink3);letter-spacing:.1em}
 .lede{margin-top:10px;margin-bottom:10px;font-size:16px;color:var(--ink2)}
 .lede b{color:var(--blue);font-weight:700}
@@ -79,7 +79,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 
 /* ---------- 日期长条 ---------- */
 .strip-wrap{position:relative;margin:10px 0 28px}
-.strip{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding:0 12px;-webkit-overflow-scrolling:touch}
+.strip{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding:0 calc(50% - var(--cw) / 2);-webkit-overflow-scrolling:touch}
 .strip::-webkit-scrollbar{display:none}
 .cell{position:relative;flex:0 0 var(--cw);scroll-snap-align:center;display:flex;flex-direction:column;align-items:center;padding:11px 0 3px}
 .cell .w{font-size:11px;color:var(--ink3);line-height:1}
@@ -90,6 +90,8 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .cell .dot{width:4px;height:4px;border-radius:50%;margin-top:4px;background:transparent}
 .cell.ev .dot{background:var(--blue)}
 .cell.on .n{background:var(--blue-soft);color:#fff;box-shadow:0 6px 12px -8px rgba(43,107,255,.45)}
+.cell.prev{opacity:.35;pointer-events:none}
+.cell.prev .n{background:transparent}
 
 /* ---------- 纪事导航 ---------- */
 .evnav{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin:20px 0 0}
@@ -111,8 +113,8 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 .story .tag{display:inline-block;padding:4px 13px;border-radius:99px;background:var(--blue-l);color:var(--blue2);font-size:15px;font-weight:700}
 .story .tag.gold{background:#FFF2DC;color:#B66A00}
-.story h3{font-size:27px;font-weight:700;line-height:1.45;margin:10px 0 8px}
-.story p{font-size:17px;color:#2A3650;line-height:1.7;margin-top:.5em;text-align:justify}
+.story h3{font-size:23px;font-weight:700;line-height:1.6;margin:10px 0 20px;text-align:justify}
+.story p{font-size:16px;color:var(--ink2);line-height:1.75;margin-top:1em;text-align:justify;text-indent:2em}
 .ph{display:grid;gap:4px;margin:12px 0 4px;border-radius:16px;overflow:hidden}
 .ph.n2,.ph.n4{grid-template-columns:1fr 1fr}
 .ph.n5{grid-template-columns:repeat(6,1fr)}
@@ -365,7 +367,9 @@ body:not(.splash-on) .wrap{opacity:1;transform:none}
 const Y = 2026, N = 365, STEP = 360 / N, C = 200;
 let CW = 58;
 const EN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const WDE = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
 const CN = ['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'];
+const ROMAN = ['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII'];
 const NUM = ['〇','一','二','三','四','五','六','七','八','九'];
 const WD = '日一二三四五六';
 const FEST = {'2026-01-01':'元旦','2026-02-17':'春节','2026-03-03':'元宵','2026-04-05':'清明','2026-05-01':'劳动节','2026-06-19':'端午','2026-08-19':'七夕','2026-09-25':'中秋','2026-10-01':'国庆','2026-10-18':'重阳','2026-12-21':'冬至'};
@@ -432,8 +436,8 @@ const arcPath = (r1, r2, a1, a2) => {
     if (has) evTicks[i] = line;
   }
   for (let m = 0; m < 12; m++) {
-    const t = el('text', {'text-anchor': 'middle', 'dominant-baseline': 'central', 'font-family': 'NSans, sans-serif', 'font-size': 18}, dial);
-    t.textContent = CN[m]; labels.push(t);
+    const t = el('text', {'text-anchor': 'middle', 'dominant-baseline': 'central', 'font-family': 'NSans, sans-serif', 'font-size': 20}, dial);
+    t.textContent = `${m + 1}月`; labels.push(t);
   }
   // 固定指针（下方）
   el('path', {d: `M${C - 7} 398 h14 l-7 -10 z`, fill: '#2B6BFF'}, dial);
@@ -583,15 +587,20 @@ function mobileScroll() {
 
 /* ================= 日期长条 ================= */
 const strip = $('#strip');
-strip.innerHTML = Array.from({length: N}, (_, i) => {
+// 1月1日是周四，前面补12月28-31日（周日到周三）作为占位
+const prevDays = [{d:28,w:0},{d:29,w:1},{d:30,w:2},{d:31,w:3}];
+const prevHTML = prevDays.map(x => `<button class="cell prev" disabled><span class="w">${WD[x.w]}</span><span class="n">${x.d}</span><span class="dot"></span></button>`).join('');
+const mainHTML = Array.from({length: N}, (_, i) => {
   const d = dateOf(i), dd = d.getDate(), wd = d.getDay(), k = keyOf(i);
   const cls = ['cell', dd === 1 && 'first', (wd === 0 || wd === 6) && 'we', byIdx[i] && 'ev', isGold(i) && 'gold', FEST[k] && 'fest'].filter(Boolean).join(' ');
   return `<button class="${cls}" data-i="${i}" aria-label="${d.getMonth() + 1}月${dd}日"><span class="w">${FEST[k] ? FEST[k].slice(0, 2) : WD[wd]}</span><span class="n">${dd}</span><span class="dot"></span></button>`;
 }).join('');
+strip.innerHTML = prevHTML + mainHTML;
 const cells = strip.children;
-const measureCW = () => { const w = cells[0] && cells[0].getBoundingClientRect().width; if (w) CW = w; };
+const OFFSET = 4; // 前4个是占位
+const measureCW = () => { const w = cells[OFFSET] && cells[OFFSET].getBoundingClientRect().width; if (w) CW = w; };
 measureCW(); addEventListener('resize', () => { measureCW(); stripTo(sel); });
-function stripTo(i) { lockUntil = performance.now() + 150; strip.scrollLeft = i * CW; }
+function stripTo(i) { lockUntil = performance.now() + 150; strip.scrollLeft = (i + OFFSET) * CW; }
 let stripT = 0, userStrip = false, userT = 0;
 // 只有用户亲手滑动长条时才反向驱动年轮，避免程序滚动 / 吸附回弹造成互相拉扯
 const markUser = () => { userStrip = true; clearTimeout(userT); };
@@ -600,12 +609,14 @@ strip.addEventListener('scroll', () => {
   if (!userStrip || performance.now() < lockUntil) return;
   clearTimeout(userT); userT = setTimeout(() => { userStrip = false; }, 400);
   stop();
-  const f = strip.scrollLeft / CW;
-  let t = 180 - f * STEP; while (t - rot > 180) t -= 360; while (t - rot < -180) t += 360;
+  const f = (strip.scrollLeft - OFFSET * CW) / CW;
+  const idx = Math.round(f);
+  if (idx < 0 || idx >= N) return;
+  let t = 180 - idx * STEP; while (t - rot > 180) t -= 360; while (t - rot < -180) t += 360;
   setRot(t, 'strip');
   clearTimeout(stripT); stripT = setTimeout(() => { flushStory(); mobileScroll(); desktopScrollTop(); }, 160);
 }, {passive: true});
-strip.addEventListener('click', e => { const c = e.target.closest('.cell'); if (c) { animateTo(+c.dataset.i); mobileScroll(); desktopScrollTop(); } });
+strip.addEventListener('click', e => { const c = e.target.closest('.cell'); if (c && !c.classList.contains('prev')) { animateTo(+c.dataset.i); mobileScroll(); desktopScrollTop(); } });
 
 /* ================= 选中变化 ================= */
 let lastCell = null;
@@ -613,11 +624,11 @@ function onSel(src, prev) {
   const d = dateOf(sel), k = keyOf(sel), list = byIdx[sel] || [];
   $('#cM').textContent = EN[d.getMonth()].toUpperCase();
   $('#cD').textContent = d.getDate();
-  $('#cW').textContent = `星期${WD[d.getDay()]}`;
+  $('#cW').textContent = WDE[d.getDay()];
   dialBox.classList.toggle('ev', list.length > 0);
 
   if (lastCell) lastCell.classList.remove('on');
-  lastCell = cells[sel]; lastCell.classList.add('on');
+  lastCell = cells[sel + OFFSET]; lastCell.classList.add('on');
   if (src !== 'strip') stripTo(sel);
   if (list.length && src === 'drag' && navigator.vibrate) navigator.vibrate(6);
 
