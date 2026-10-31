@@ -176,7 +176,7 @@ footer p{font-size:17px;color:var(--ink2);margin-top:20px;letter-spacing:.16em}
 .wish-in{position:relative;z-index:1;max-width:460px;width:100%}
 .wish-k{display:inline-block;padding:6px 16px;border-radius:99px;background:var(--white);border:1px solid var(--line);font-size:15px;color:var(--ink2);letter-spacing:.12em}
 .wish h3{margin-top:18px;font-size:56px;font-weight:700;letter-spacing:.14em;color:var(--blue);line-height:1.2;opacity:0}
-.wish p{margin-top:16px;font-size:23px;font-weight:700;color:var(--ink);line-height:1.5;opacity:0}
+.wish p{margin-top:16px;font-size:21px;font-weight:700;color:var(--ink);line-height:1.5;opacity:0}
 .wish p.poem{margin-top:22px;padding:16px 6px 14px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:26px;letter-spacing:.06em;color:var(--blue2);line-height:1.7}
 .wish p.poem .pb{display:inline-block;text-align:left;margin-right:-.06em}
 .wish p.poem .pb span{display:block}
@@ -407,7 +407,7 @@ const NS = 'http://www.w3.org/2000/svg';
 const dial = $('#dial'), dialBox = $('#dialBox');
 const el = (t, a, p) => { const n = document.createElementNS(NS, t); for (const k in a) n.setAttribute(k, a[k]); p && p.appendChild(n); return n; };
 const P = (r, deg) => { const a = (deg - 90) * Math.PI / 180; return [C + r * Math.cos(a), C + r * Math.sin(a)]; };
-let ring, labels = [], evTicks = [], mLines = [];
+let ring, labels = [], evTicks = [];
 const arcPath = (r1, r2, a1, a2) => {
   const [x1, y1] = P(r2, a1), [x2, y2] = P(r2, a2), [x3, y3] = P(r1, a2), [x4, y4] = P(r1, a1);
   return `M${x1} ${y1}A${r2} ${r2} 0 0 1 ${x2} ${y2}L${x3} ${y3}A${r1} ${r1} 0 0 0 ${x4} ${y4}Z`;
@@ -424,7 +424,7 @@ const arcPath = (r1, r2, a1, a2) => {
   ring = el('g', {}, dial);
   for (let m = 0; m < 12; m++) {
     const [x1, y1] = P(106, mStart[m] * STEP), [x2, y2] = P(150, mStart[m] * STEP);
-    mLines.push(el('line', {x1, y1, x2, y2, stroke: '#D5DFF0', 'stroke-width': 1}, ring));
+    el('line', {x1, y1, x2, y2, stroke: '#D5DFF0', 'stroke-width': 1}, ring);
   }
   evTicks = [];
   for (let i = 0; i < N; i++) {
@@ -445,24 +445,12 @@ const arcPath = (r1, r2, a1, a2) => {
   el('line', {x1: C, y1: 388, x2: C, y2: 350, stroke: '#2B6BFF', 'stroke-width': 2, 'stroke-linecap': 'round'}, dial);
 })();
 
-let hlM = -1;
 function placeLabels() {
   const cm = sel >= 0 ? dateOf(sel).getMonth() : -1;
-  if (cm !== hlM) {
-    if (hlM >= 0) {
-      mLines[hlM].setAttribute('stroke', '#D5DFF0'); mLines[hlM].setAttribute('stroke-width', '1');
-      mLines[(hlM + 1) % 12].setAttribute('stroke', '#D5DFF0'); mLines[(hlM + 1) % 12].setAttribute('stroke-width', '1');
-    }
-    if (cm >= 0) {
-      mLines[cm].setAttribute('stroke', '#2B6BFF'); mLines[cm].setAttribute('stroke-width', '2');
-      mLines[(cm + 1) % 12].setAttribute('stroke', '#2B6BFF'); mLines[(cm + 1) % 12].setAttribute('stroke-width', '2');
-    }
-    hlM = cm;
-  }
   labels.forEach((t, m) => {
     const [x, y] = P(128, (mStart[m] + mLen(m) / 2) * STEP + rot);
     t.setAttribute('x', x.toFixed(1)); t.setAttribute('y', y.toFixed(1));
-    t.setAttribute('fill', m === cm ? '#1847C9' : '#4B5A75');
+    t.setAttribute('fill', m === cm ? '#2B6BFF' : '#4B5A75');
     t.setAttribute('font-weight', m === cm ? 700 : 400);
   });
 }
