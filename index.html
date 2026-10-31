@@ -91,8 +91,8 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .cell .dot{width:4px;height:4px;border-radius:50%;margin-top:4px;background:transparent}
 .cell.ev .dot{background:var(--blue)}
 .cell.on .n{background:var(--blue-soft);color:#fff;box-shadow:0 6px 12px -8px rgba(43,107,255,.45)}
-.cell.prev{opacity:.35;pointer-events:none}
-.cell.prev .n{background:transparent}
+.cell.prev,.cell.next{opacity:.35;pointer-events:none}
+.cell.prev .n,.cell.next .n{background:transparent}
 
 /* ---------- 纪事导航 ---------- */
 .evnav{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin:20px 0 0}
@@ -144,8 +144,8 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .story-v-text{flex:1;min-width:0}
 .story-v-text h3{margin-top:0}
 .void{padding:32px 0 24px;text-align:center}
-.void img{width:75%;aspect-ratio:16/9;object-fit:cover;border-radius:16px;margin:0 auto 20px;display:block}
-.void .q{font-size:16.8px;color:var(--ink2);line-height:1.75;text-align:center}
+.void img{width:75%;aspect-ratio:16/9;object-fit:cover;border-radius:16px;margin:0 auto 13px;display:block}
+.void .q{font-size:14px;color:var(--ink2);line-height:1.75;text-align:center;font-style:italic}
 
 /* ---------- 一览 ---------- */
 .sec-h{display:flex;align-items:baseline;justify-content:space-between;padding:52px 0 6px}
@@ -583,12 +583,15 @@ const strip = $('#strip');
 // 1月1日是周四，前面补12月28-31日（周日到周三）作为占位
 const prevDays = [{d:28,w:0},{d:29,w:1},{d:30,w:2},{d:31,w:3}];
 const prevHTML = prevDays.map(x => `<button class="cell prev" disabled><span class="w">${WD[x.w]}</span><span class="n">${x.d}</span><span class="dot"></span></button>`).join('');
+// 12月31日后补2027年1月1-3日（周五到周日）作为占位
+const nextDays = [{d:1,w:5},{d:2,w:6},{d:3,w:0}];
+const nextHTML = nextDays.map(x => `<button class="cell next" disabled><span class="w">${WD[x.w]}</span><span class="n">${x.d}</span><span class="dot"></span></button>`).join('');
 const mainHTML = Array.from({length: N}, (_, i) => {
   const d = dateOf(i), dd = d.getDate(), wd = d.getDay(), k = keyOf(i);
   const cls = ['cell', dd === 1 && 'first', (wd === 0 || wd === 6) && 'we', byIdx[i] && 'ev', isGold(i) && 'gold', FEST[k] && 'fest'].filter(Boolean).join(' ');
   return `<button class="${cls}" data-i="${i}" aria-label="${d.getMonth() + 1}月${dd}日"><span class="w">${FEST[k] ? FEST[k].slice(0, 2) : WD[wd]}</span><span class="n">${dd}</span><span class="dot"></span></button>`;
 }).join('');
-strip.innerHTML = prevHTML + mainHTML;
+strip.innerHTML = prevHTML + mainHTML + nextHTML;
 const cells = strip.children;
 const OFFSET = 4; // 前4个是占位
 const measureCW = () => { const w = cells[OFFSET] && cells[OFFSET].getBoundingClientRect().width; if (w) CW = w; };
@@ -609,7 +612,7 @@ strip.addEventListener('scroll', () => {
   setRot(t, 'strip');
   clearTimeout(stripT); stripT = setTimeout(() => { flushStory(); mobileScroll(); desktopScrollTop(); }, 160);
 }, {passive: true});
-strip.addEventListener('click', e => { const c = e.target.closest('.cell'); if (c && !c.classList.contains('prev')) { animateTo(+c.dataset.i); mobileScroll(); desktopScrollTop(); } });
+strip.addEventListener('click', e => { const c = e.target.closest('.cell'); if (c && !c.classList.contains('prev') && !c.classList.contains('next')) { animateTo(+c.dataset.i); mobileScroll(); desktopScrollTop(); } });
 
 /* ================= 选中变化 ================= */
 let lastCell = null;
