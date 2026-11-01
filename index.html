@@ -148,7 +148,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .story-v-text{flex:1;min-width:0}
 .story-v-text h3{margin-top:0}
 .void{padding:32px 0 24px;text-align:center}
-.void img{width:75%;aspect-ratio:16/9;object-fit:cover;border-radius:16px;margin:0 auto 13px;display:block}
+.void img{width:75%;aspect-ratio:16/9;object-fit:cover;border-radius:16px;margin:0 auto 13px;display:block;box-shadow:2px 2px 3px rgba(0,0,0,0.4),5px 5px 15px rgba(0,0,0,0.25),inset 0 1px 3px rgba(255,255,255,0.6)}
 .void .q{font-size:14px;color:var(--ink2);line-height:1.75;text-align:center;font-style:italic}
 
 /* ---------- 一览 ---------- */
@@ -183,9 +183,9 @@ footer p{font-size:clamp(17px,2.5vw,20px);color:var(--ink2);margin-top:20px;lett
 .wish canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 .wish-in{position:relative;z-index:1;max-width:460px;width:100%}
 .wish-k{display:inline-block;padding:6px 16px;border-radius:99px;background:var(--white);border:1px solid var(--line);font-size:15px;color:var(--ink2);letter-spacing:.12em;box-shadow:1px 1px 2px rgba(0,0,0,0.1),2px 2px 5px rgba(0,0,0,0.08),inset 0 1px 2px rgba(255,255,255,0.6)}
-.wish h3{margin-top:18px;font-size:56px;font-weight:700;letter-spacing:.14em;color:var(--blue);line-height:1.2;opacity:0}
+.wish h3{margin-top:18px;font-size:56px;font-weight:700;letter-spacing:.14em;color:var(--blue);line-height:1.2;opacity:0;text-shadow:1.5px -1.5px 1.5px rgba(0,0,0,0.25),-1.5px -1.5px 1.5px rgba(255,255,255,0.7)}
 .wish p{margin-top:16px;font-size:21px;font-weight:700;color:var(--ink);line-height:1.5;opacity:0}
-.wish p.poem{margin-top:22px;padding:16px 6px 14px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:26px;letter-spacing:.06em;color:var(--blue2);line-height:1.7}
+.wish p.poem{margin-top:22px;padding:16px 6px 14px;font-size:26px;letter-spacing:.06em;color:var(--blue2);line-height:1.7}
 .wish p.poem .pb{display:inline-block;text-align:left;margin-right:-.06em}
 .wish p.poem .pb span{display:block}
 .wish p.poem cite{display:block;margin-top:6px;font-size:15px;font-style:normal;font-weight:400;letter-spacing:.1em;color:var(--ink3)}
@@ -692,7 +692,7 @@ function renderStory() {
       '沉淀，是为了更好的绽放'
     ];
     const d = dateOf(sel), m = d.getMonth();
-    const imgMap = { 5: 'images/unrecorded_day/06月绿色共生厂区版.webp', 6: 'images/unrecorded_day/07月厂区炎炎夏日.webp', 7: 'images/unrecorded_day/08月探索新材.webp', 8: 'images/unrecorded_day/09月月满团圆.webp', 9: 'images/unrecorded_day/10月金秋.webp' };
+    const imgMap = { 0: 'images/unrecorded_day/01月新年启程.webp', 1: 'images/unrecorded_day/02月灯火迎春.webp', 2: 'images/unrecorded_day/03月植绿新生.webp', 3: 'images/unrecorded_day/04月春风踏青.webp', 4: 'images/unrecorded_day/05月致敬劳动.webp', 5: 'images/unrecorded_day/06月绿色共生厂区版.webp', 6: 'images/unrecorded_day/07月厂区炎炎夏日.webp', 7: 'images/unrecorded_day/08月探索新材.webp', 8: 'images/unrecorded_day/09月月满团圆.webp', 9: 'images/unrecorded_day/10月金秋.webp' };
     const img = imgMap[m];
     const msgIdx = sel % MSGS.length;
     h += `<div class="void">${img ? `<img src="${img}" alt="" loading="lazy">` : ''}<div class="q">${MSGS[msgIdx]}</div></div>`;
