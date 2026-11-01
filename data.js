@@ -427,7 +427,7 @@ window.EVENTS = [
     title: '创新大事记！这五年我们这样走过',
     text: '（来源：中国石油报）',
     images: ['images/202607/20260727/640.webp'],
-    square: true
+    longImage: true
   },
   {
     date: '2026-07-27',
