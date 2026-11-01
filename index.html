@@ -103,8 +103,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 
 /* ---------- 当日正文 ---------- */
 .col-r{margin-top:26px;min-height:320px;background:var(--white);border:1px solid #D5DFF0;border-radius:26px;padding:24px var(--pad) 8px;margin-left:calc(-1 * var(--pad) + 8px);margin-right:calc(-1 * var(--pad) + 8px);box-shadow:3px 3px 5px rgba(0,0,0,0.12),6px 6px 18px rgba(0,0,0,0.08),inset 0 1px 3px rgba(255,255,255,0.7);position:relative}
-.col-r-gradient{position:absolute;bottom:0;left:0;right:0;height:60px;background:linear-gradient(to bottom,transparent,var(--white));pointer-events:none;opacity:0;transition:opacity .3s;z-index:10;border-radius:0 0 26px 26px}
+.col-r-gradient{position:absolute;bottom:0;left:0;right:0;height:60px;background:linear-gradient(to bottom,transparent,var(--white));pointer-events:none;opacity:0;transition:opacity .3s;z-index:10;border-radius:0 0 26px 26px;display:none}
 .col-r-gradient:not(.at-bottom){opacity:1}
+@media (min-width:1000px){.col-r-gradient{display:block}}
 .sv-head{display:flex;align-items:center;gap:14px;padding-bottom:16px;border-bottom:1px solid var(--line)}
 .sv-head .big{font-family:var(--num);font-weight:700;font-size:58px;line-height:.9;color:var(--blue);letter-spacing:-.03em}
 .sv-head .meta{font-size:14px;color:var(--ink3);line-height:1.6}
