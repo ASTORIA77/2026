@@ -62,7 +62,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .lede b{color:var(--blue);font-weight:700}
 
 /* ================= 主体 ================= */
-.main{display:flex;flex-direction:column}
+.main{display:flex;flex-direction:column;position:relative}
 .col-l{padding-top:8px}
 
 /* ---------- 年轮：手机上铺满可用宽度，两侧留白 ---------- */
@@ -102,7 +102,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .evnav span{font-size:13px;color:var(--blue-soft);text-align:center;font-weight:600;height:40px;line-height:40px;display:inline-block}
 
 /* ---------- 当日正文 ---------- */
-.col-r{margin-top:26px;min-height:320px;background:var(--white);border:1px solid #D5DFF0;border-radius:26px;padding:24px var(--pad) 8px;margin-left:calc(-1 * var(--pad) + 8px);margin-right:calc(-1 * var(--pad) + 8px);box-shadow:3px 3px 5px rgba(0,0,0,0.12),6px 6px 18px rgba(0,0,0,0.08),inset 0 1px 3px rgba(255,255,255,0.7)}
+.col-r{margin-top:26px;min-height:320px;background:var(--white);border:1px solid #D5DFF0;border-radius:26px;padding:24px var(--pad) 8px;margin-left:calc(-1 * var(--pad) + 8px);margin-right:calc(-1 * var(--pad) + 8px);box-shadow:3px 3px 5px rgba(0,0,0,0.12),6px 6px 18px rgba(0,0,0,0.08),inset 0 1px 3px rgba(255,255,255,0.7);position:relative}
+.col-r-gradient{position:absolute;bottom:0;left:0;right:0;height:60px;background:linear-gradient(to bottom,transparent,var(--white));pointer-events:none;opacity:0;transition:opacity .3s;z-index:10;border-radius:0 0 26px 26px}
+.col-r-gradient:not(.at-bottom){opacity:1}
 .sv-head{display:flex;align-items:center;gap:14px;padding-bottom:16px;border-bottom:1px solid var(--line)}
 .sv-head .big{font-family:var(--num);font-weight:700;font-size:58px;line-height:.9;color:var(--blue);letter-spacing:-.03em}
 .sv-head .meta{font-size:14px;color:var(--ink3);line-height:1.6}
@@ -220,10 +222,12 @@ footer p{font-size:clamp(17px,2.5vw,20px);color:var(--ink2);margin-top:20px;lett
   :root{--pad:40px}
   .main{display:grid;grid-template-columns:460px 1fr;column-gap:56px;align-items:stretch}
   .col-l{padding:20px 0 0}
-  .col-r{margin-top:20px;min-height:0;contain:size;display:flex;flex-direction:column;overflow-y:auto;scrollbar-width:thin;scrollbar-color:#D5DFF0 transparent}
+  .col-r{margin-top:20px;min-height:0;contain:size;display:flex;flex-direction:column;overflow-y:auto;scrollbar-width:thin;scrollbar-color:transparent transparent}
+  .col-r.scrolling{scrollbar-color:#D5DFF0 transparent}
   .col-r::-webkit-scrollbar{width:6px}
   .col-r::-webkit-scrollbar-track{background:transparent}
-  .col-r::-webkit-scrollbar-thumb{background:#D5DFF0;border-radius:3px}
+  .col-r::-webkit-scrollbar-thumb{background:transparent;border-radius:3px;transition:background .3s}
+  .col-r.scrolling::-webkit-scrollbar-thumb{background:#D5DFF0}
   .col-r::-webkit-scrollbar-thumb:hover{background:#C3CEE2}
   .col-r > *{flex-shrink:0}
   .strip-wrap{margin-top:0;margin-left:0;margin-right:0}
@@ -349,6 +353,7 @@ body:not(.splash-on) .wrap{opacity:1;transform:none}
   </section>
 
   <section class="col-r" id="story" aria-live="polite"></section>
+  <div class="col-r-gradient"></div>
 </div>
 
 
@@ -574,6 +579,38 @@ function desktopScrollTop() {
     if (colR) colR.scrollTop = 0;
   }
 }
+
+(function colRScrollbar() {
+  const colR = document.querySelector('.col-r');
+  const gradient = document.querySelector('.col-r-gradient');
+  if (!colR) return;
+  let timer;
+  function updateGradientPosition() {
+    if (!gradient) return;
+    const rect = colR.getBoundingClientRect();
+    const parentRect = colR.parentElement.getBoundingClientRect();
+    gradient.style.left = (rect.left - parentRect.left) + 'px';
+    gradient.style.right = (parentRect.right - rect.right) + 'px';
+    gradient.style.bottom = (parentRect.bottom - rect.bottom) + 'px';
+  }
+  function checkBottom() {
+    const atBottom = colR.scrollTop + colR.clientHeight >= colR.scrollHeight - 5;
+    colR.classList.toggle('at-bottom', atBottom);
+    if (gradient) gradient.classList.toggle('at-bottom', atBottom);
+  }
+  colR.addEventListener('scroll', () => {
+    colR.classList.add('scrolling');
+    checkBottom();
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      colR.classList.remove('scrolling');
+      checkBottom();
+    }, 800);
+  }, { passive: true });
+  checkBottom();
+  updateGradientPosition();
+  window.addEventListener('resize', updateGradientPosition);
+})();
 
 function mobileScroll() {
   if (window.innerWidth <= 768) {
