@@ -111,6 +111,10 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .filter-indicator{position:absolute;top:3px;left:3px;height:calc(100% - 6px);border-radius:99px;background:linear-gradient(135deg,#6B95F2 0%,#3A6BD4 100%);transition:transform .4s cubic-bezier(0.34, 1.56, 0.64, 1),width .3s cubic-bezier(0.4, 0, 0.2, 1);z-index:1;box-shadow:0 2px 8px rgba(43,107,255,0.35),inset 0 1px 2px rgba(255,255,255,0.3)}
 
 body.filter-major .dial-box .ev-tick:not(.major){stroke:#D5DFF0 !important;opacity:.3}
+body.filter-major .dial-box .ev-tick.major{stroke:#C8DAFF !important;stroke-width:3.5}
+.dial-box .ev-tick.major{stroke:#C8DAFF !important}
+
+body.filter-major .story.major h3{color:var(--ink)}
 
 /* ---------- 当日正文 ---------- */
 .col-r{margin-top:26px;min-height:320px;background:var(--white);border:1px solid #D5DFF0;border-radius:26px;padding:24px var(--pad) 8px;margin-left:calc(-1 * var(--pad) + 8px);margin-right:calc(-1 * var(--pad) + 8px);box-shadow:3px 3px 5px rgba(0,0,0,0.12),6px 6px 18px rgba(0,0,0,0.08),inset 0 1px 3px rgba(255,255,255,0.7)}
@@ -550,8 +554,9 @@ function bwdTo(i) {
 }
 // 磁吸：松手时若附近 3 天内有纪事，自动吸附过去
 function magnet(i, r = 3) {
+  const days = document.body.classList.contains('filter-major') ? majorDays : evDays;
   let best = i, bd = r + 1;
-  for (const e of evDays) { const d = Math.min(mod(e - i, N), mod(i - e, N)); if (d < bd) { bd = d; best = e; } }
+  for (const e of days) { const d = Math.min(mod(e - i, N), mod(i - e, N)); if (d < bd) { bd = d; best = e; } }
   return best;
 }
 
@@ -687,20 +692,23 @@ $('#mtop').onclick = () => dialBox.scrollIntoView({behavior: 'smooth', block: 'c
 function renderStory() {
   storyShown = sel;
   const d = dateOf(sel), k = keyOf(sel), list = byIdx[sel] || [], m = d.getMonth();
+  const isMajorMode = document.body.classList.contains('filter-major');
+  const filteredList = isMajorMode ? list.filter(e => e.major) : list;
+  
   let h = `<div class="sv-head"><div class="big">${pad(d.getDate())}</div>
     <div class="meta"><b>${m + 1}月 · 星期${WD[d.getDay()]}</b><span>2026 年第 ${sel + 1} 天</span></div></div>`;
-  if (list.length) {
-    h += list.map((e, n) => {
+  if (filteredList.length) {
+    h += filteredList.map((e, n) => {
       const imgs = (e.images || []).slice(0, 6);
       const ps = String(e.text || '').split(/\n+/).filter(Boolean).map(p => `<p>${esc(p)}</p>`).join('');
       if (e.vertical && imgs.length) {
-        return `<article class="story story-v${e.major ? ' major' : ''}" style="animation-delay:${n * .07}s">
+        return `<article class="story story-v major" style="animation-delay:${n * .07}s">
           <div class="ph-v"><figure><img src="${esc(imgs[0])}" alt="" loading="lazy"></figure></div>
           <div class="story-v-text">${e.tag ? `<div class="tag${e.tag === GOLD ? ' gold' : ''}">${esc(e.tag)}</div>` : ''}<h3>${esc(e.title || '')}</h3>${ps}</div>
         </article>`;
       }
       const phClass = `ph n${imgs.length}${e.square ? ' square' : ''}${e.imageTop ? ' image-top' : ''}${e.imageBottom ? ' image-bottom' : ''}${e.longImage ? ' long-image' : ''}`;
-      return `<article class="story${e.major ? ' major' : ''}" style="animation-delay:${n * .07}s">
+      return `<article class="story major" style="animation-delay:${n * .07}s">
         ${e.tag ? `<div class="tag${e.tag === GOLD ? ' gold' : ''}">${esc(e.tag)}</div>` : ''}<h3>${esc(e.title || '')}</h3>
         ${imgs.length ? `<div class="${phClass}">${imgs.map(s => `<figure><img src="${esc(s)}" alt="" loading="lazy"></figure>`).join('')}</div>` : ''}${ps}</article>`;
     }).join('');
