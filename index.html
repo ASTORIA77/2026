@@ -980,6 +980,392 @@ window.addEventListener('scroll', () => {
 /* ================= 启动：年轮转入 ================= */
 setRot(180 - startIdx * STEP + (reduce ? 0 : 75), 'init');
 requestAnimationFrame(() => animateTo(startIdx, reduce ? 0 : 1400, true));
+
+/* ================= 高光粒子特效 ================= */
+(function highlightIntro() {
+  'use strict';
+  const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+  const mix = (a, b, t) => a + (b - a) * t;
+  const smooth = t => (t = clamp(t), t * t * (3 - 2 * t));
+  const outCubic = t => 1 - Math.pow(1 - clamp(t), 3);
+  const ease = t => (t = clamp(t), t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+  const css = `
+    :host { position:absolute; inset:0; z-index:80; display:block; overflow:hidden;
+      border-radius:inherit; isolation:isolate; color:#4A7FE0; font-family:"PingFang SC","Microsoft YaHei",sans-serif; }
+    :host([hidden]) { display:none!important; }
+    .veil {position:absolute;inset:0;opacity:0;background:
+      radial-gradient(ellipse at 50% 46%,rgba(180,210,255,.37),transparent 53%),
+      linear-gradient(160deg,#f3f6ff 0%,#f8faff 53%,#eef2ff 100%);}
+    canvas {position:absolute;inset:0;width:100%;height:100%;}
+    .kicker,.foot {position:absolute;left:20px;right:20px;text-align:center;pointer-events:none;opacity:0;}
+    .kicker {top:calc(44% - 125px);font-size:12px;letter-spacing:5px;color:#6B95F2;}
+    .foot {top:calc(44% + 125px);font-size:13px;letter-spacing:3px;color:#8BA3D4;}
+    .rule {display:block;height:1px;width:36px;margin:0 auto 19px;background:#6B95F2;}
+    .skip {position:absolute;right:21px;bottom:max(24px,env(safe-area-inset-bottom));padding:10px 15px;
+      border:1px solid #9db3e865;border-radius:30px;background:#ffffff80;color:#5A7FC0;font-size:12px;
+      font-family:inherit;cursor:pointer;opacity:0;transition:background .2s;}
+    .skip:hover {background:#fff;} .skip:focus-visible {outline:2px solid #4A7FE0;outline-offset:4px;}
+    .still {position:absolute;top:44%;left:12px;right:12px;transform:translateY(-50%);text-align:center;
+      line-height:1.85;letter-spacing:4px;color:#4A7FE0;font-weight:600;font-size:clamp(22px,6vw,38px);}
+    @media(max-height:500px){.kicker{top:calc(44% - 90px)}.foot{top:calc(44% + 102px)}}
+  `;
+
+  class HighlightIntro {
+    constructor(options = {}) {
+      this.options = options;
+      this.container = options.container || document.body;
+      this.duration = Math.max(3000, Number(options.duration) || 5600);
+      this.lines = (options.textLines || ['每一个高光时刻', '都有你']).map(String);
+      this.running = false;
+      this.destroyed = false;
+      this.host = document.createElement('div');
+      this.host.hidden = true;
+      this.host.setAttribute('data-highlight-intro', '');
+      this.host.setAttribute('role', 'dialog');
+      this.host.setAttribute('aria-label', this.lines.join('，'));
+      this.host.style.cssText = this.container === document.body
+        ? 'position:fixed;inset:0;z-index:9999;' : 'position:absolute;inset:0;z-index:80;border-radius:inherit;';
+      this.originalPosition = this.container.style.position;
+      this.adjustedPosition = this.container !== document.body && getComputedStyle(this.container).position === 'static';
+      if (this.adjustedPosition) this.container.style.position = 'relative';
+      const shadow = this.host.attachShadow({ mode: 'open' });
+      shadow.innerHTML = `<style>${css}</style><div class="veil"></div><canvas aria-hidden="true"></canvas>
+        <div class="kicker" aria-hidden="true">那些闪闪发光的瞬间</div>
+        <div class="foot" aria-hidden="true"><i class="rule"></i>值得被好好珍藏</div>
+        <button class="skip" type="button">跳过动画</button>`;
+      this.shadow = shadow;
+      this.canvas = shadow.querySelector('canvas');
+      this.ctx = this.canvas.getContext('2d');
+      this.veil = shadow.querySelector('.veil');
+      this.kicker = shadow.querySelector('.kicker');
+      this.foot = shadow.querySelector('.foot');
+      this.skip = shadow.querySelector('.skip');
+      this.skip.addEventListener('click', () => this.finish('skipped', true));
+      this.onKey = e => { if (e.key === 'Escape' && this.running) { e.preventDefault(); this.finish('skipped', true); } };
+      this.host.addEventListener('keydown', this.onKey);
+      this.container.appendChild(this.host);
+      this.onVisibility = () => {
+        if (!this.running) return;
+        if (document.hidden) this.pausedAt = performance.now();
+        else if (this.pausedAt != null) {
+          this.startedAt += performance.now() - this.pausedAt;
+          this.pausedAt = null;
+        }
+      };
+      document.addEventListener('visibilitychange', this.onVisibility);
+      this.resizeObserver = new ResizeObserver(() => {
+        if (this.running && !this.reduced) this.build();
+      });
+      this.resizeObserver.observe(this.container);
+    }
+
+    play() {
+      if (this.destroyed) return Promise.resolve({ reason: 'destroyed' });
+      if (this.running) return this.promise;
+      this.running = true;
+      this.revealed = false;
+      this.previousFocus = document.activeElement;
+      this.inertElements = Array.from(this.container.children).filter(el => el !== this.host)
+        .map(el => ({ el, inert: el.inert }));
+      this.inertElements.forEach(({ el }) => { el.inert = true; });
+      this.host.hidden = false;
+      this.host.style.opacity = '1';
+      this.skip.focus({ preventScroll: true });
+      this.promise = new Promise(resolve => { this.resolve = resolve; });
+      this.startedAt = performance.now();
+      this.pausedAt = document.hidden ? this.startedAt : null;
+      this.reduced = matchMedia('(prefers-reduced-motion: reduce)').matches || !this.ctx;
+      this.kicker.style.opacity = '0';
+      this.foot.style.opacity = '0';
+      this.veil.style.opacity = '0';
+      this.skip.style.opacity = '0';
+      if (this.reduced) {
+        this.canvas.style.display = 'none';
+        this.still = document.createElement('div');
+        this.still.className = 'still';
+        this.lines.forEach((line, i) => {
+          if (i) this.still.appendChild(document.createElement('br'));
+          this.still.appendChild(document.createTextNode(line));
+        });
+        this.shadow.appendChild(this.still);
+      } else {
+        this.canvas.style.display = 'block';
+        this.build();
+      }
+      this.tick = this.tick.bind(this);
+      this.raf = requestAnimationFrame(this.tick);
+      return this.promise;
+    }
+
+    build() {
+      const rect = this.host.getBoundingClientRect();
+      this.w = Math.max(1, rect.width);
+      this.h = Math.max(1, rect.height);
+      this.dpr = Math.min(devicePixelRatio || 1, 2);
+      this.canvas.width = Math.round(this.w * this.dpr);
+      this.canvas.height = Math.round(this.h * this.dpr);
+      this.ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+      let seed = 2026;
+      const random = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
+      const mask = document.createElement('canvas');
+      mask.width = Math.ceil(this.w);
+      mask.height = Math.ceil(this.h);
+      const m = mask.getContext('2d', { willReadFrequently: true });
+      const fontFamily = this.options.fontFamily || '"PingFang SC", "Microsoft YaHei", sans-serif';
+      let font = Math.min(42, this.w * .076);
+      const tracking = font * .085;
+      const lineWidth = (line, size) => {
+        m.font = `600 ${size}px ${fontFamily}`;
+        return [...line].reduce((sum, ch) => sum + m.measureText(ch).width, 0) + Math.max(0, [...line].length - 1) * tracking;
+      };
+      const widest = Math.max(...this.lines.map(line => lineWidth(line, font)));
+      if (widest > this.w * .88) font *= this.w * .88 / widest;
+      this.fontSize = font;
+      const lineHeight = font * 1.85;
+      this.centerY = this.h * .44;
+      m.fillStyle = '#fff';
+      m.textBaseline = 'middle';
+      const rows = [];
+      this.lines.forEach((line, i) => {
+        const size = i === this.lines.length - 1 && this.lines.length > 1 ? font * 1.18 : font;
+        let x = (this.w - lineWidth(line, size)) / 2;
+        const y = this.centerY + (i - (this.lines.length - 1) / 2) * lineHeight;
+        m.font = `600 ${size}px ${fontFamily}`;
+        for (const ch of line) { m.fillText(ch, x, y); x += m.measureText(ch).width + tracking; }
+        rows.push(y);
+      });
+      this.mask = mask;
+      this.ink = document.createElement('canvas');
+      this.ink.width = mask.width; this.ink.height = mask.height;
+      const ic = this.ink.getContext('2d');
+      ic.drawImage(mask, 0, 0);
+      ic.globalCompositeOperation = 'source-in';
+      const inkGradient = ic.createLinearGradient(0, this.centerY - 55, 0, this.centerY + 65);
+      inkGradient.addColorStop(0, '#4A7FE0');
+      inkGradient.addColorStop(.46, '#6B95F2');
+      inkGradient.addColorStop(1, '#3A6BD4');
+      ic.fillStyle = inkGradient; ic.fillRect(0, 0, this.w, this.h);
+      const data = m.getImageData(0, 0, mask.width, mask.height).data;
+      const points = [];
+      const step = this.w < 480 ? 1.65 : 1.8;
+      const top = Math.max(0, Math.floor(rows[0] - font));
+      const bottom = Math.min(mask.height, Math.ceil(rows[rows.length - 1] + font));
+      for (let y = top; y < bottom; y += step) {
+        for (let x = 0; x < this.w; x += step) {
+          if (data[(Math.floor(y) * mask.width + Math.floor(x)) * 4 + 3] > 95) points.push({ x, y });
+        }
+      }
+      for (let i = points.length - 1; i > 0; i--) {
+        const j = Math.floor(random() * (i + 1));
+        [points[i], points[j]] = [points[j], points[i]];
+      }
+      const cap = this.w < 480 ? 2300 : 3200;
+      this.particles = points.slice(0, cap).map(({ x, y }) => {
+        const angle = random() * Math.PI * 2;
+        const radius = Math.max(this.w, this.h * .62) * (.38 + random() * .48);
+        const sx = this.w / 2 + Math.cos(angle) * radius;
+        const sy = this.centerY + Math.sin(angle) * radius * .72;
+        const exitAngle = Math.atan2(y - this.centerY, x - this.w / 2) + (random() - .5) * 1.35;
+        const distance = Math.max(this.w, this.h) * (.32 + random() * .52);
+        return { x, y, sx, sy,
+          cx: mix(sx, x, .54) + Math.sin(angle) * 80,
+          cy: mix(sy, y, .54) - Math.cos(angle) * 90,
+          ex: x + Math.cos(exitAngle) * distance,
+          ey: y + Math.sin(exitAngle) * distance * .56 - 50,
+          delay: random() * .115 + (x / this.w) * .035,
+          leaveDelay: random() * .05 + (x / this.w) * .035,
+          size: .45 + random() * .6, phase: random() * Math.PI * 2,
+          shade: Math.floor(random() * 5), shimmer: random() > .971
+        };
+      });
+      this.dust = Array.from({ length: this.w < 480 ? 52 : 82 }, () => ({
+        x: random() * this.w, y: random() * this.h, r: .5 + random() * 1.6,
+        phase: random() * Math.PI * 2, speed: 7 + random() * 16
+      }));
+      this.glow = document.createElement('canvas');
+      this.glow.width = this.glow.height = 40;
+      const gc = this.glow.getContext('2d');
+      const gradient = gc.createRadialGradient(20, 20, 0, 20, 20, 20);
+      gradient.addColorStop(0, 'rgba(180,210,255,.95)');
+      gradient.addColorStop(.16, 'rgba(107,149,242,.55)');
+      gradient.addColorStop(.48, 'rgba(74,127,224,.12)');
+      gradient.addColorStop(1, 'rgba(74,127,224,0)');
+      gc.fillStyle = gradient; gc.fillRect(0, 0, 40, 40);
+    }
+
+    tick(now) {
+      if (!this.running) return;
+      if (this.pausedAt != null) { this.raf = requestAnimationFrame(this.tick); return; }
+      const p = clamp((now - this.startedAt) / (this.reduced ? 1200 : this.duration));
+      if (this.reduced) {
+        this.veil.style.opacity = '1';
+        this.skip.style.opacity = '1';
+        if (p === 1) { this.finish('completed', true); return; }
+      } else {
+        const veilIn = smooth(p / .15);
+        const ending = smooth((p - .85) / .15);
+        this.veil.style.opacity = String(veilIn * (1 - ending));
+        this.kicker.style.opacity = String(smooth((p - .23) / .15) * (1 - smooth((p - .79) / .13)) * .9);
+        this.foot.style.opacity = String(smooth((p - .36) / .14) * (1 - smooth((p - .81) / .13)));
+        this.skip.style.opacity = String(veilIn * (1 - ending));
+        this.draw(p, (now - this.startedAt) / 1000);
+        if (p >= .85) this.reveal();
+        if (p === 1) { this.finish('completed', true); return; }
+      }
+      this.raf = requestAnimationFrame(this.tick);
+    }
+
+    draw(p, time) {
+      const c = this.ctx;
+      const colors = ['#4A7FE0', '#5A8AE8', '#6B95F2', '#7BA3F5', '#8BB5F8'];
+      c.clearRect(0, 0, this.w, this.h);
+      const ambient = smooth(p / .11) * (1 - smooth((p - .76) / .2));
+      for (const d of this.dust) {
+        const x = d.x + Math.sin(time * .24 + d.phase) * 12;
+        const y = (d.y - time * d.speed + this.h * 2) % this.h;
+        c.globalAlpha = ambient * (.24 + .19 * Math.sin(time * .9 + d.phase));
+        c.drawImage(this.glow, x - d.r * 5, y - d.r * 5, d.r * 10, d.r * 10);
+        c.fillStyle = '#5A8AE8';
+        c.beginPath(); c.arc(x, y, d.r * .6, 0, Math.PI * 2); c.fill();
+      }
+      const ink = smooth((p - .385) / .11) * (1 - smooth((p - .79) / .08));
+      if (ink > 0) {
+        c.globalAlpha = ink * .64;
+        c.drawImage(this.ink, 0, 0);
+      }
+      for (const pt of this.particles) {
+        const t = ease((p - .055 - pt.delay) / .285);
+        const leave = clamp((p - .79 - pt.leaveDelay) / .14);
+        const fly = outCubic(leave);
+        const inv = 1 - t;
+        let x = inv * inv * pt.sx + 2 * inv * t * pt.cx + t * t * pt.x;
+        let y = inv * inv * pt.sy + 2 * inv * t * pt.cy + t * t * pt.y;
+        x += Math.sin(time * 1.1 + pt.phase) * .24 * t;
+        y += Math.cos(time * 1.3 + pt.phase) * .24 * t;
+        if (leave > 0) {
+          x = mix(x, pt.ex, fly);
+          y = mix(y, pt.ey, fly) + Math.sin(leave * Math.PI) * Math.sin(pt.phase) * 22;
+        }
+        const arrivalAlpha = smooth((p - .018 - pt.delay * .2) / .075);
+        const alpha = arrivalAlpha * (1 - smooth(leave)) * (.69 + .2 * Math.sin(time * 1.8 + pt.phase));
+        if (alpha < .008) continue;
+        const radius = pt.size * (1 + (1 - t) * .55 + fly * .24);
+        c.globalAlpha = alpha;
+        c.fillStyle = colors[pt.shade];
+        c.beginPath(); c.arc(x, y, radius, 0, Math.PI * 2); c.fill();
+        if (pt.shimmer) {
+          const pulse = Math.pow(Math.max(0, Math.sin(time * 1.55 + pt.phase)), 8);
+          c.globalAlpha = alpha * (.19 + pulse * .62);
+          c.drawImage(this.glow, x - 9, y - 9, 18, 18);
+          if (pulse > .65) {
+            c.strokeStyle = '#6B95F2'; c.lineWidth = .6;
+            c.beginPath(); c.moveTo(x - 3, y); c.lineTo(x + 3, y);
+            c.moveTo(x, y - 3); c.lineTo(x, y + 3); c.stroke();
+          }
+        }
+      }
+      c.globalAlpha = 1;
+    }
+
+    reveal() {
+      if (this.revealed) return;
+      this.revealed = true;
+      if (typeof this.options.onReveal === 'function') {
+        try { this.options.onReveal(); } catch (error) { console.error('HighlightIntro onReveal:', error); }
+      }
+    }
+
+    finish(reason, reveal) {
+      if (!this.running) return;
+      cancelAnimationFrame(this.raf);
+      if (reveal) this.reveal();
+      this.running = false;
+      this.host.hidden = true;
+      if (this.still) { this.still.remove(); this.still = null; }
+      this.inertElements.forEach(({ el, inert }) => { el.inert = inert; });
+      const result = { reason };
+      this.resolve(result);
+      if (typeof this.options.onComplete === 'function') {
+        try { this.options.onComplete(result); } catch (error) { console.error('HighlightIntro onComplete:', error); }
+      }
+      if (this.previousFocus && this.previousFocus.isConnected && typeof this.previousFocus.focus === 'function') {
+        this.previousFocus.focus({ preventScroll: true });
+      }
+    }
+    cancel() { this.finish('cancelled', false); }
+    destroy() {
+      this.cancel();
+      this.destroyed = true;
+      this.resizeObserver.disconnect();
+      document.removeEventListener('visibilitychange', this.onVisibility);
+      this.host.removeEventListener('keydown', this.onKey);
+      this.host.remove();
+      if (this.adjustedPosition) this.container.style.position = this.originalPosition;
+    }
+  }
+
+  // 接入逻辑
+  const pageRoot = document.querySelector('.app') || document.body;
+  const content = document.querySelector('.wrap.main');
+  let savedVisibility = '';
+  let savedDisabled = false;
+  let hasPlayed = false;
+
+  const intro = new HighlightIntro({
+    container: pageRoot,
+    duration: 5600,
+    textLines: ['每一个高光时刻', '都有你'],
+    onReveal() {
+      content.style.visibility = savedVisibility;
+      if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        // Set initial state first
+        content.style.opacity = '0';
+        content.style.transform = 'translateY(18px) scale(.96)';
+        content.style.filter = 'blur(5px)';
+        content.style.transition = 'none';
+        
+        // Force reflow
+        content.offsetHeight;
+        
+        // Animate to final state (slower)
+        content.style.transition = 'opacity 2000ms cubic-bezier(.16,1,.3,1), transform 2000ms cubic-bezier(.16,1,.3,1), filter 2000ms cubic-bezier(.16,1,.3,1)';
+        content.style.opacity = '1';
+        content.style.transform = 'translateY(0) scale(1)';
+        content.style.filter = 'blur(0)';
+      }
+    },
+    onComplete() {
+      const btn = document.querySelector('#highlight');
+      if (btn) btn.disabled = savedDisabled;
+    }
+  });
+
+  // Hook into filter toggle
+  const filterBtns = document.querySelectorAll('.filter-option');
+  filterBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const filter = btn.dataset.filter;
+      if (filter === 'major') {
+        savedVisibility = content.style.visibility;
+        savedDisabled = btn.disabled;
+        content.style.visibility = 'hidden';
+        intro.play();
+        btn.disabled = true;
+      } else if (filter === 'all' && intro.running) {
+        intro.cancel();
+        content.style.visibility = savedVisibility;
+        const highlightBtn = document.querySelector('#highlight');
+        if (highlightBtn) highlightBtn.disabled = savedDisabled;
+      }
+    });
+  });
+
+  window.addEventListener('beforeunload', () => {
+    intro.destroy();
+  });
+})();
+
+// Close main IIFE
 })();
 </script>
 </body>
