@@ -1234,7 +1234,7 @@ requestAnimationFrame(() => animateTo(startIdx, reduce ? 0 : 1400, true));
         c.drawImage(this.ink, 0, 0);
       }
       for (const pt of this.particles) {
-        const t = ease((p - .055 - pt.delay) / .285);
+        const t = outCubic((p - .015 - pt.delay) / .4);
         const leave = clamp((p - .85 - pt.leaveDelay) / .10);
         const fly = outCubic(leave);
         const inv = 1 - t;
@@ -1313,7 +1313,7 @@ requestAnimationFrame(() => animateTo(startIdx, reduce ? 0 : 1400, true));
 
   const intro = new HighlightIntro({
     container: pageRoot,
-    duration: 5600,
+    duration: 4000,
     textLines: ['回望来路', '皆是星光'],
     onReveal() {
       content.style.visibility = savedVisibility;
