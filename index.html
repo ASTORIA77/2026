@@ -997,7 +997,7 @@ requestAnimationFrame(() => animateTo(startIdx, reduce ? 0 : 1400, true));
       radial-gradient(ellipse at 50% 46%,rgba(180,210,255,.37),transparent 53%),
       linear-gradient(160deg,#f3f6ff 0%,#f8faff 53%,#eef2ff 100%);}
     canvas {position:absolute;inset:0;width:100%;height:100%;}
-    .kicker,.foot {position:absolute;left:20px;right:20px;text-align:center;pointer-events:none;opacity:0;}
+    .kicker,.foot {position:absolute;left:50%;transform:translateX(-50%);width:80%;text-align:center;pointer-events:none;opacity:0;}
     .kicker {top:calc(44% - 154px);font-size:18px;font-weight:700;letter-spacing:3px;color:#6B95F2;}
     .foot {top:calc(44% + 140px);font-size:18px;font-weight:700;letter-spacing:3px;color:#6B95F2;}
     .rule {display:block;height:1px;width:36px;margin:0 auto 19px;background:#6B95F2;}
