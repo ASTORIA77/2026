@@ -998,8 +998,8 @@ requestAnimationFrame(() => animateTo(startIdx, reduce ? 0 : 1400, true));
       linear-gradient(160deg,#f3f6ff 0%,#f8faff 53%,#eef2ff 100%);}
     canvas {position:absolute;inset:0;width:100%;height:100%;}
     .kicker,.foot {position:absolute;left:20px;right:20px;text-align:center;pointer-events:none;opacity:0;}
-    .kicker {top:calc(44% - 125px);font-size:14px;letter-spacing:5px;color:#6B95F2;}
-    .foot {top:calc(44% + 125px);font-size:14px;letter-spacing:3px;color:#8BA3D4;}
+    .kicker {top:calc(44% - 145px);font-size:14px;font-weight:700;letter-spacing:3px;color:#6B95F2;}
+    .foot {top:calc(44% + 145px);font-size:14px;font-weight:700;letter-spacing:3px;color:#6B95F2;}
     .rule {display:block;height:1px;width:36px;margin:0 auto 19px;background:#6B95F2;}
     .skip {position:absolute;right:21px;bottom:max(24px,env(safe-area-inset-bottom));padding:10px 15px;
       border:1px solid #9db3e865;border-radius:30px;background:#ffffff80;color:#5A7FC0;font-size:12px;
@@ -1030,8 +1030,8 @@ requestAnimationFrame(() => animateTo(startIdx, reduce ? 0 : 1400, true));
       if (this.adjustedPosition) this.container.style.position = 'relative';
       const shadow = this.host.attachShadow({ mode: 'open' });
       shadow.innerHTML = `<style>${css}</style><div class="veil"></div><canvas aria-hidden="true"></canvas>
-        <div class="kicker" aria-hidden="true">那些闪闪发光的瞬间</div>
-        <div class="foot" aria-hidden="true"><i class="rule"></i>值得被好好珍藏</div>
+        <div class="kicker" aria-hidden="true">致敬每一个高光瞬间</div>
+        <div class="foot" aria-hidden="true">致敬每一位同行的你</div>
         <button class="skip" type="button">跳过动画</button>`;
       this.shadow = shadow;
       this.canvas = shadow.querySelector('canvas');
@@ -1112,7 +1112,7 @@ requestAnimationFrame(() => animateTo(startIdx, reduce ? 0 : 1400, true));
       mask.height = Math.ceil(this.h);
       const m = mask.getContext('2d', { willReadFrequently: true });
       const fontFamily = this.options.fontFamily || '"PingFang SC", "Microsoft YaHei", sans-serif';
-      let font = Math.min(42, this.w * .076);
+      let font = Math.min(42, this.w * .076) + 2;
       const tracking = font * .085;
       const lineWidth = (line, size) => {
         m.font = `600 ${size}px ${fontFamily}`;
@@ -1127,7 +1127,7 @@ requestAnimationFrame(() => animateTo(startIdx, reduce ? 0 : 1400, true));
       m.textBaseline = 'middle';
       const rows = [];
       this.lines.forEach((line, i) => {
-        const size = i === this.lines.length - 1 && this.lines.length > 1 ? font * 1.18 : font;
+        const size = font;
         let x = (this.w - lineWidth(line, size)) / 2;
         const y = this.centerY + (i - (this.lines.length - 1) / 2) * lineHeight;
         m.font = `600 ${size}px ${fontFamily}`;
@@ -1314,7 +1314,7 @@ requestAnimationFrame(() => animateTo(startIdx, reduce ? 0 : 1400, true));
   const intro = new HighlightIntro({
     container: pageRoot,
     duration: 5600,
-    textLines: ['每一个高光时刻', '都有你'],
+    textLines: ['回望来路', '皆是星光'],
     onReveal() {
       content.style.visibility = savedVisibility;
       if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
@@ -1351,11 +1351,17 @@ requestAnimationFrame(() => animateTo(startIdx, reduce ? 0 : 1400, true));
         content.style.visibility = 'hidden';
         intro.play();
         btn.disabled = true;
-      } else if (filter === 'all' && intro.running) {
-        intro.cancel();
+      } else if (filter === 'all') {
+        if (intro.running) {
+          intro.cancel();
+        }
+        document.body.classList.remove('filter-major');
         content.style.visibility = savedVisibility;
         const highlightBtn = document.querySelector('#highlight');
         if (highlightBtn) highlightBtn.disabled = savedDisabled;
+        // Re-render story to show all events
+        renderStory();
+        if (window.updateFilterCounter) window.updateFilterCounter();
       }
     });
   });
