@@ -663,7 +663,9 @@ function onSel(src, prev) {
   if (src !== 'strip') stripTo(sel);
   if (list.length && src === 'drag' && navigator.vibrate) navigator.vibrate(6);
 
-  const pv = evDays.filter(x => x < sel).pop(), nx = evDays.find(x => x > sel);
+  const isMajorMode = document.body.classList.contains('filter-major');
+  const navDays = isMajorMode ? majorDays : evDays;
+  const pv = navDays.filter(x => x < sel).pop(), nx = navDays.find(x => x > sel);
   $('#pv').disabled = $('#mpv').disabled = pv === undefined;
   $('#nx').disabled = $('#mnx').disabled = nx === undefined;
   $('#mDate').textContent = '';
